@@ -1,0 +1,296 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Usage &mdash; django-edit-suggestion 1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Install" href="install.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> django-edit-suggestion
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#parent-model-example">Parent Model Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-use">How to use</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#create-new-edit-suggestion">Create new edit suggestion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#diff-against-the-parent">Diff against the parent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#publish">Publish</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reject">Reject</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">django-edit-suggestion</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Usage</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/usage.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
+<p>It’s attached to a model via a field that during django setup phase creates a model related to that specific parent model.</p>
+<p>EditSuggestion instances:
+- can be modified/deleted by the author of each instance
+- status can be “under review”, “rejected” and “published”
+- status change need to pass a condition
+- changing the status to “published” updates the tracked model and locks the edit suggestion from being edited/deleted</p>
+<div class="section" id="parent-model-example">
+<h2>Parent Model Example<a class="headerlink" href="#parent-model-example" title="Permalink to this headline">¶</a></h2>
+<p>Model has a field “edit_suggestion” that instantiates EditSuggestion
+A serializer module and parent serializer is passed as a tuple ex:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">condition_check</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">parent_model_instance</span><span class="p">,</span> <span class="n">edit_suggestion_instance</span><span class="p">):</span>
+    <span class="c1"># do some checks and return a boolean</span>
+    <span class="k">if</span> <span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span> <span class="ow">or</span> <span class="n">parent_model_instance</span><span class="o">.</span><span class="n">author</span> <span class="o">==</span> <span class="n">user</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+<span class="k">class</span> <span class="nc">ParentModel</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">excluded_field</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">m2m_type_field</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToMany</span><span class="p">(</span><span class="n">Tags</span><span class="p">)</span>
+    <span class="n">edit_suggestions</span> <span class="o">=</span> <span class="n">EditSuggestion</span><span class="p">(</span>
+        <span class="n">excluded_fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;excluded_field&#39;</span><span class="p">],</span>
+        <span class="n">m2m_fields</span><span class="o">=</span><span class="p">({</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;m2m_type_field&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="s1">&#39;tags.models.Tags&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;through&#39;</span><span class="p">:</span> <span class="s1">&#39;optional. empty if not used&#39;</span><span class="p">,</span>
+            <span class="p">}),</span>
+        <span class="n">change_status_condition</span><span class="o">=</span><span class="n">condition_check</span><span class="p">,</span>
+        <span class="n">bases</span><span class="o">=</span><span class="p">(</span><span class="n">VotableMixin</span><span class="p">,),</span> <span class="c1"># optional. bases are used to build the edit suggestion model upon them</span>
+        <span class="n">user_class</span><span class="o">=</span><span class="n">CustomUser</span><span class="p">,</span> <span class="c1"># optional. uses the default user model</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>At django initializing stage the Edit Suggestion App creates a model for each Model having this field ex: “EditSuggestionParentModel”</p>
+<p>Can access the model by ParentModel.edit_suggestions.model</p>
+</div>
+<div class="section" id="how-to-use">
+<h2>How to use<a class="headerlink" href="#how-to-use" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="create-new-edit-suggestion">
+<h2>Create new edit suggestion<a class="headerlink" href="#create-new-edit-suggestion" title="Permalink to this headline">¶</a></h2>
+<p>After setting up the field inside the parent model just create a new edit suggestion by invoking the model <code class="docutils literal notranslate"><span class="pre">create()</span></code> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">edit_suggestion</span> <span class="o">=</span> <span class="n">parentModelInstance</span><span class="o">.</span><span class="n">edit_suggestions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="o">**</span><span class="n">user_data</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="diff-against-the-parent">
+<h2>Diff against the parent<a class="headerlink" href="#diff-against-the-parent" title="Permalink to this headline">¶</a></h2>
+<p>Can see the differences between the parent instance and the curent edit:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">changes</span> <span class="o">=</span> <span class="n">edit_suggestion</span><span class="o">.</span><span class="n">diff_against_parent</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>It will return an object <code class="docutils literal notranslate"><span class="pre">ModelDelta</span></code> that has the attributes:
+- object.changes: tracked changes
+- object.changed_fields: changed fields name
+- object.old_record: parent instance
+- object.new_record: current edit instance</p>
+</div>
+<div class="section" id="publish">
+<h2>Publish<a class="headerlink" href="#publish" title="Permalink to this headline">¶</a></h2>
+<p>To publish an edit suggestion you need to pass in an user. If the <code class="docutils literal notranslate"><span class="pre">change_status_condition</span></code> does not pass,
+a <code class="docutils literal notranslate"><span class="pre">django.contrib.auth.models.PermissionDenied</span></code> exception will be raised.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">edit_suggestion</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will change the status from <code class="docutils literal notranslate"><span class="pre">edit_suggestion.Status.UNDER_REVIEWS</span></code> to <code class="docutils literal notranslate"><span class="pre">edit_suggestion.Status.PUBLISHED</span></code>.
+After publishing, the edit suggestion won’t be able to be edited anymore.</p>
+</div>
+<div class="section" id="reject">
+<h2>Reject<a class="headerlink" href="#reject" title="Permalink to this headline">¶</a></h2>
+<p>To reject an edit suggestion you need to pass in an user and a reason. If the <code class="docutils literal notranslate"><span class="pre">change_status_condition</span></code> does not pass,
+a <code class="docutils literal notranslate"><span class="pre">django.contrib.auth.models.PermissionDenied</span></code> exception will be raised.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">edit_suggestion</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will change the status from <code class="docutils literal notranslate"><span class="pre">edit_suggestion.Status.UNDER_REVIEWS</span></code> to <code class="docutils literal notranslate"><span class="pre">edit_suggestion.Status.REJECTED</span></code>.
+After rejecting, the edit suggestion won’t be able to be edited anymore.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="install.html" class="btn btn-neutral float-left" title="Install" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, vladimir gorea
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

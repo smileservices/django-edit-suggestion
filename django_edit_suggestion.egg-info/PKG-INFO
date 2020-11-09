@@ -1,0 +1,15 @@
+Metadata-Version: 1.1
+Name: django-edit-suggestion
+Version: 1.0
+Summary: A django package for creating multiple users editable models
+Home-page: https://github.com/smileservices/django-simple-history
+Author: Vladimir Gorea
+Author-email: vladimir.gorea@gmail.com
+License: MIT
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 1 - Planning
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: MIT License
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python :: > 3
