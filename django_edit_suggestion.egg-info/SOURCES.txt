@@ -1,4 +1,4 @@
-README
+README.md
 setup.cfg
 setup.py
 django-edit-suggestion/__init__.py
