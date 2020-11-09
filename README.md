@@ -4,7 +4,7 @@ A django package for enabling django resources to be edited by users other than 
 The resource (an instance of a django model saved to database) will have a list of "edit suggestions" created by other users. The "edit suggestions" can be published,
 which will update the resource, or can be rejected. Users that pass a condition can publish or reject edit suggestions.
 
-Documentation is available (here)[https://django-edit-suggestion.readthedocs.io/en/latest/]
+Documentation is available at [read the docs link](https://django-edit-suggestion.readthedocs.io/en/latest/).
 
 ## Install
 
