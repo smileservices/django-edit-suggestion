@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='Django Edit Suggestion',
+    name='django-edit-suggestion',
     version='1.21',
     description='A django package for creating multiple users editable models',
     url='https://github.com/smileservices/django-edit-suggestion',
