@@ -1,10 +1,10 @@
 from setuptools import setup
 
 setup(
-    name='django-edit-suggestion',
-    version='1.02',
+    name='Django Edit Suggestion',
+    version='1.21',
     description='A django package for creating multiple users editable models',
-    url='https://github.com/smileservices/django-simple-history',
+    url='https://github.com/smileservices/django-edit-suggestion',
     author='Vladimir Gorea',
     author_email='vladimir.gorea@gmail.com',
     license='MIT',

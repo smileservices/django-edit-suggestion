@@ -12,13 +12,13 @@ Install from ``PyPI`` with ``pip``:
 Settings
 ~~~~~~~~
 
-Add ``django-edit-suggestion`` to your ``INSTALLED_APPS``
+Add ``django_edit_suggestion`` to your ``INSTALLED_APPS``
 
 .. code-block:: python
 
     INSTALLED_APPS = [
         # ...
-        'django-edit-suggestion',
+        'django_edit_suggestion',
     ]
 
 Requires to have Users

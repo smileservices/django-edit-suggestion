@@ -8,7 +8,7 @@ Documentation is available at [read the docs link](https://django-edit-suggestio
 
 ## Install
 
-Install from `PyPI`_ with ``pip``:
+Install from `PyPI` with ``pip``:
 
     $ pip install django-edit-suggestion
 

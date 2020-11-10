@@ -1,0 +1,42 @@
+Metadata-Version: 2.1
+Name: Django-Edit-Suggestion
+Version: 1.21
+Summary: A django package for creating multiple users editable models
+Home-page: https://github.com/smileservices/django-edit-suggestion
+Author: Vladimir Gorea
+Author-email: vladimir.gorea@gmail.com
+License: MIT
+Description: # Django Edit Suggestion
+        
+        A django package for enabling django resources to be edited by users other than admin or resource author.
+        The resource (an instance of a django model saved to database) will have a list of "edit suggestions" created by other users. The "edit suggestions" can be published,
+        which will update the resource, or can be rejected. Users that pass a condition can publish or reject edit suggestions.
+        
+        Documentation is available at [read the docs link](https://django-edit-suggestion.readthedocs.io/en/latest/).
+        
+        ## Install
+        
+        Install from `PyPI` with ``pip``:
+        
+            $ pip install django-edit-suggestion
+        
+        
+        ## Settings
+        
+        
+        Add ``django_edit_suggestion`` to your ``INSTALLED_APPS``
+        
+            INSTALLED_APPS = [
+                # ...
+                'django_edit_suggestion',
+            ]
+        
+        Requires to have Users
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 1 - Planning
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python :: 3
+Description-Content-Type: text/markdown

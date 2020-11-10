@@ -1,0 +1,13 @@
+README.md
+setup.cfg
+setup.py
+Django_Edit_Suggestion.egg-info/PKG-INFO
+Django_Edit_Suggestion.egg-info/SOURCES.txt
+Django_Edit_Suggestion.egg-info/dependency_links.txt
+Django_Edit_Suggestion.egg-info/top_level.txt
+django_edit_suggestion/__init__.py
+django_edit_suggestion/apps.py
+django_edit_suggestion/exceptions.py
+django_edit_suggestion/manager.py
+django_edit_suggestion/middleware.py
+django_edit_suggestion/models.py
