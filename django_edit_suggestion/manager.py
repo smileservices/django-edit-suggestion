@@ -29,3 +29,7 @@ class EditSuggestionManager(models.Manager):
         if self.instance is None:
             return qs
         return self.get_super_queryset().filter(**{'edit_suggestion_parent': self.instance})
+
+    def new(self, data):
+        data['edit_suggestion_parent'] = self.instance
+        return self.create(**data)

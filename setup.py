@@ -2,13 +2,13 @@ from setuptools import setup
 
 setup(
     name='django-edit-suggestion',
-    version='1.0',
+    version='1.02',
     description='A django package for creating multiple users editable models',
     url='https://github.com/smileservices/django-simple-history',
     author='Vladimir Gorea',
     author_email='vladimir.gorea@gmail.com',
     license='MIT',
-    packages=['django-edit-suggestion'],
+    packages=['django_edit_suggestion'],
     install_requires=[], # packages listed here will be automatically installed
 
     classifiers=[

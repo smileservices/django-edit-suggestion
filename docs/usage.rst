@@ -17,6 +17,9 @@ A serializer module and parent serializer is passed as a tuple ex:
 
 .. code-block:: python
 
+    class Tag(models.Model)
+        name = models.CharField(max_length=126)
+
     def condition_check(user, parent_model_instance, edit_suggestion_instance):
         # do some checks and return a boolean
         if user.is_superuser or parent_model_instance.author == user:
@@ -25,12 +28,12 @@ A serializer module and parent serializer is passed as a tuple ex:
 
     class ParentModel(models.Model):
         excluded_field = models.IntegerField()
-        m2m_type_field = models.ManyToMany(Tags)
+        m2m_type_field = models.ManyToManyField(Tags)
         edit_suggestions = EditSuggestion(
             excluded_fields=['excluded_field'],
             m2m_fields=({
                 'name': 'm2m_type_field',
-                'model': 'tags.models.Tags',
+                'model': Tag,
                 'through': 'optional. empty if not used',
                 }),
             change_status_condition=condition_check,
@@ -79,7 +82,7 @@ a ``django.contrib.auth.models.PermissionDenied`` exception will be raised.
 
 .. code-block:: python
 
-    edit_suggestion.publish(user)
+    edit_suggestion.edit_suggestion_publish(user)
 
 This will change the status from ``edit_suggestion.Status.UNDER_REVIEWS`` to ``edit_suggestion.Status.PUBLISHED``.
 After publishing, the edit suggestion won't be able to be edited anymore.
@@ -92,7 +95,7 @@ a ``django.contrib.auth.models.PermissionDenied`` exception will be raised.
 
 .. code-block:: python
 
-    edit_suggestion.reject(user, reason)
+    edit_suggestion.edit_suggestion_reject(user, reason)
 
 This will change the status from ``edit_suggestion.Status.UNDER_REVIEWS`` to ``edit_suggestion.Status.REJECTED``.
 After rejecting, the edit suggestion won't be able to be edited anymore.

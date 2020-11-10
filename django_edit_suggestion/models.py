@@ -31,10 +31,10 @@ class EditSuggestion(object):
 
     def __init__(
             self,
-            excluded_fields,
             change_status_condition,
             # m2m fields arg
             # tuple of dicts with keys 'name','model','through'-optional
+            excluded_fields=None,
             m2m_fields=None,
             user_model=None,
             verbose_name=None,
@@ -47,12 +47,12 @@ class EditSuggestion(object):
         self.change_status_condition = change_status_condition
         self.user_set_verbose_name = verbose_name
         self.user_model = user_model
-        self.m2m_fields = m2m_fields
+        self.m2m_fields = m2m_fields if m2m_fields else []
         self.cascade_delete_edit_suggestion = cascade_delete_edit_suggestion
         self.custom_model_name = custom_model_name
         self.app = app
         self.related_name = related_name
-        self.excluded_fields = excluded_fields
+        self.excluded_fields = excluded_fields if excluded_fields else []
         self.edit_suggestion_model = None  # will be declared in finalize method
         self.tracked_fields = {'simple': [], 'm2m': []}  # filled up in set_tracked_fields method
         try:
@@ -77,7 +77,7 @@ class EditSuggestion(object):
 
     def finalize(self, sender, **kwargs):
         # sender is the tracked_model
-
+        self.parent_model_name = sender._meta.object_name
         if self.cls is not sender and not issubclass(sender, self.cls):
             return  # set in abstract
 
@@ -233,7 +233,7 @@ class EditSuggestion(object):
         """
 
         def str_repr(instance):
-            return f'Edit Suggestion by {instance.author} for "{instance.parent}"'
+            return f'Edit Suggestion by {instance.edit_suggestion_author} for "{instance.edit_suggestion_parent}"'
 
         def publish(instance, user):
             if not self.change_status_condition(instance, user):
@@ -246,37 +246,39 @@ class EditSuggestion(object):
                 instance_m2m_field = getattr(instance, m2m_field)
                 parent_m2m_field.set(instance_m2m_field.all())
             instance.edit_suggestion_parent.save()
-            instance.status = self.Status.PUBLISHED
+            instance.edit_suggestion_status = self.Status.PUBLISHED
             instance.save()
 
         def reject(instance, user, reason):
-            if self.change_status_condition(instance, user):
+            if not self.change_status_condition(instance, user):
                 raise PermissionDenied('User not allowed to reject the edit suggestion')
-            instance.status = self.Status.REJECTED
+            instance.edit_suggestion_status = self.Status.REJECTED
             instance.reject_reason = reason
             instance.save()
 
         extra_fields = {
             "id": models.AutoField(primary_key=True),
             # edit suggestion author. if tracked model has a field with same name it should be excluded
-            "author": models.ForeignKey(get_user_model(), null=True, blank=True, on_delete=models.DO_NOTHING,
-                                        related_name="edit_suggestions"),
+            "edit_suggestion_author": models.ForeignKey(get_user_model(), null=True, blank=True,
+                                                        on_delete=models.DO_NOTHING,
+                                                        related_name=self.get_related_name_for("edit_suggestions")),
             # tracked model relationship
             "edit_suggestion_parent": models.ForeignKey(model, on_delete=models.CASCADE),
             "edit_suggestion_date_created": models.DateTimeField(auto_now_add=True),
             "edit_suggestion_date_updated": models.DateTimeField(auto_now=True),
             "edit_suggestion_reason": models.TextField(),
-            "status_change_by": models.ForeignKey(get_user_model(), null=True, blank=True, on_delete=models.DO_NOTHING,
-                                                  related_name="edit_suggestions_moderated"),
-            "status": models.IntegerField(default=0, choices=self.Status.choices, db_index=True),
-            "reject_reason": models.TextField(),
-            "publish": publish,
-            "reject": reject,
+            "edit_suggestion_status": models.IntegerField(default=0, choices=self.Status.choices, db_index=True),
+            "edit_suggestion_reject_reason": models.TextField(),
+            "edit_suggestion_publish": publish,
+            "edit_suggestion_reject": reject,
             "__str__": str_repr,
             "edit_suggestion_tracked_fields": self.tracked_fields,
         }
 
         return extra_fields
+
+    def get_related_name_for(self, name):
+        return f'{name}_{self.parent_model_name}'
 
     def get_meta_options(self, model):
         """
@@ -300,7 +302,7 @@ class EditSuggestion(object):
         # can edit only if the status is REVIEW
         try:
             from_db = self.edit_suggestion_model.objects.get(pk=instance.pk)
-            if from_db.status != self.Status.UNDER_REVIEWS:
+            if from_db.edit_suggestion_status != self.Status.UNDER_REVIEWS:
                 raise PermissionDenied('Edit suggestion cannot be modified once the status changed')
         except self.edit_suggestion_model.DoesNotExist:
             pass
@@ -344,7 +346,7 @@ class EditSuggestionChanges(object):
         changed_fields = []
         old_values = model_to_dict(self.edit_suggestion_parent)
         current_values = model_to_dict(self)
-        for field in self.edit_suggestion_tracked_fields['simple']+self.edit_suggestion_tracked_fields['m2m']:
+        for field in self.edit_suggestion_tracked_fields['simple'] + self.edit_suggestion_tracked_fields['m2m']:
             if field in old_values and old_values[field] != current_values[field]:
                 change = ModelChange(field, old_values[field], current_values[field])
                 changes.append(change)

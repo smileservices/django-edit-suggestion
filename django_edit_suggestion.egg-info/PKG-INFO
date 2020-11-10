@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: django-edit-suggestion
-Version: 1.0
+Version: 1.2
 Summary: A django package for creating multiple users editable models
 Home-page: https://github.com/smileservices/django-simple-history
 Author: Vladimir Gorea
@@ -11,6 +11,8 @@ Description: # Django Edit Suggestion
         A django package for enabling django resources to be edited by users other than admin or resource author.
         The resource (an instance of a django model saved to database) will have a list of "edit suggestions" created by other users. The "edit suggestions" can be published,
         which will update the resource, or can be rejected. Users that pass a condition can publish or reject edit suggestions.
+        
+        Documentation is available (here)[https://django-edit-suggestion.readthedocs.io/en/latest/]
         
         ## Install
         

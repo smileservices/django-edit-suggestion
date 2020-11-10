@@ -1,7 +1,7 @@
 Install
 =======
 
-Install from `PyPI`_ with ``pip``:
+Install from ``PyPI`` with ``pip``:
 
 .. code-block:: bash
 
@@ -12,13 +12,13 @@ Install from `PyPI`_ with ``pip``:
 Settings
 ~~~~~~~~
 
-Add ``django_edit_suggestion`` to your ``INSTALLED_APPS``
+Add ``django-edit-suggestion`` to your ``INSTALLED_APPS``
 
 .. code-block:: python
 
     INSTALLED_APPS = [
         # ...
-        'django_edit_suggestion',
+        'django-edit-suggestion',
     ]
 
 Requires to have Users
