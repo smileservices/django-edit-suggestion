@@ -170,7 +170,10 @@
 <h2>Parent Model Example<a class="headerlink" href="#parent-model-example" title="Permalink to this headline">¶</a></h2>
 <p>Model has a field “edit_suggestion” that instantiates EditSuggestion
 A serializer module and parent serializer is passed as a tuple ex:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">condition_check</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">parent_model_instance</span><span class="p">,</span> <span class="n">edit_suggestion_instance</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Tag</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">126</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">condition_check</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">parent_model_instance</span><span class="p">,</span> <span class="n">edit_suggestion_instance</span><span class="p">):</span>
     <span class="c1"># do some checks and return a boolean</span>
     <span class="k">if</span> <span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span> <span class="ow">or</span> <span class="n">parent_model_instance</span><span class="o">.</span><span class="n">author</span> <span class="o">==</span> <span class="n">user</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
@@ -178,12 +181,12 @@ A serializer module and parent serializer is passed as a tuple ex:</p>
 
 <span class="k">class</span> <span class="nc">ParentModel</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
     <span class="n">excluded_field</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
-    <span class="n">m2m_type_field</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToMany</span><span class="p">(</span><span class="n">Tags</span><span class="p">)</span>
+    <span class="n">m2m_type_field</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Tags</span><span class="p">)</span>
     <span class="n">edit_suggestions</span> <span class="o">=</span> <span class="n">EditSuggestion</span><span class="p">(</span>
         <span class="n">excluded_fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;excluded_field&#39;</span><span class="p">],</span>
         <span class="n">m2m_fields</span><span class="o">=</span><span class="p">({</span>
             <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;m2m_type_field&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="s1">&#39;tags.models.Tags&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">Tag</span><span class="p">,</span>
             <span class="s1">&#39;through&#39;</span><span class="p">:</span> <span class="s1">&#39;optional. empty if not used&#39;</span><span class="p">,</span>
             <span class="p">}),</span>
         <span class="n">change_status_condition</span><span class="o">=</span><span class="n">condition_check</span><span class="p">,</span>
@@ -221,7 +224,7 @@ A serializer module and parent serializer is passed as a tuple ex:</p>
 <h2>Publish<a class="headerlink" href="#publish" title="Permalink to this headline">¶</a></h2>
 <p>To publish an edit suggestion you need to pass in an user. If the <code class="docutils literal notranslate"><span class="pre">change_status_condition</span></code> does not pass,
 a <code class="docutils literal notranslate"><span class="pre">django.contrib.auth.models.PermissionDenied</span></code> exception will be raised.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">edit_suggestion</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">edit_suggestion</span><span class="o">.</span><span class="n">edit_suggestion_publish</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This will change the status from <code class="docutils literal notranslate"><span class="pre">edit_suggestion.Status.UNDER_REVIEWS</span></code> to <code class="docutils literal notranslate"><span class="pre">edit_suggestion.Status.PUBLISHED</span></code>.
@@ -231,7 +234,7 @@ After publishing, the edit suggestion won’t be able to be edited anymore.</p>
 <h2>Reject<a class="headerlink" href="#reject" title="Permalink to this headline">¶</a></h2>
 <p>To reject an edit suggestion you need to pass in an user and a reason. If the <code class="docutils literal notranslate"><span class="pre">change_status_condition</span></code> does not pass,
 a <code class="docutils literal notranslate"><span class="pre">django.contrib.auth.models.PermissionDenied</span></code> exception will be raised.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">edit_suggestion</span><span class="o">.</span><span class="n">reject</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">edit_suggestion</span><span class="o">.</span><span class="n">edit_suggestion_reject</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This will change the status from <code class="docutils literal notranslate"><span class="pre">edit_suggestion.Status.UNDER_REVIEWS</span></code> to <code class="docutils literal notranslate"><span class="pre">edit_suggestion.Status.REJECTED</span></code>.
