@@ -51,12 +51,14 @@ How to use
 
 Create new edit suggestion
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-After setting up the field inside the parent model just create a new edit suggestion by invoking the model ``create()`` method:
+After setting up the field inside the parent model just create a new edit suggestion by invoking the model ``new()`` method:
 
 .. code-block:: python
 
-    edit_suggestion = parentModelInstance.edit_suggestions.create(**user_data)
-
+    edit_suggestion = parentModelInstance.edit_suggestions.new({
+        **edit_data,
+        'edit_suggestion_author': user_instance
+     })
 
 Diff against the parent
 ~~~~~~~~~~~~~~~~~~~~~~~

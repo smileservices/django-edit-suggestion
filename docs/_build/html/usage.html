@@ -203,8 +203,11 @@ A serializer module and parent serializer is passed as a tuple ex:</p>
 </div>
 <div class="section" id="create-new-edit-suggestion">
 <h2>Create new edit suggestion<a class="headerlink" href="#create-new-edit-suggestion" title="Permalink to this headline">¶</a></h2>
-<p>After setting up the field inside the parent model just create a new edit suggestion by invoking the model <code class="docutils literal notranslate"><span class="pre">create()</span></code> method:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">edit_suggestion</span> <span class="o">=</span> <span class="n">parentModelInstance</span><span class="o">.</span><span class="n">edit_suggestions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="o">**</span><span class="n">user_data</span><span class="p">)</span>
+<p>After setting up the field inside the parent model just create a new edit suggestion by invoking the model <code class="docutils literal notranslate"><span class="pre">new()</span></code> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">edit_suggestion</span> <span class="o">=</span> <span class="n">parentModelInstance</span><span class="o">.</span><span class="n">edit_suggestions</span><span class="o">.</span><span class="n">new</span><span class="p">({</span>
+    <span class="o">**</span><span class="n">edit_data</span><span class="p">,</span>
+    <span class="s1">&#39;edit_suggestion_author&#39;</span><span class="p">:</span> <span class="n">user_instance</span>
+ <span class="p">})</span>
 </pre></div>
 </div>
 </div>
