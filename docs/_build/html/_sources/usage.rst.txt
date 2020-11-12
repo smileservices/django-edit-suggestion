@@ -101,3 +101,21 @@ a ``django.contrib.auth.models.PermissionDenied`` exception will be raised.
 
 This will change the status from ``edit_suggestion.Status.UNDER_REVIEWS`` to ``edit_suggestion.Status.REJECTED``.
 After rejecting, the edit suggestion won't be able to be edited anymore.
+
+M2M Fields
+~~~~~~~~~~
+
+Can add ManyToManyField references by passing actual model or string. For referencing self instance use ``'self'``:
+
+.. code-block:: python
+
+    class M2MSelfModel(models.Model):
+        name = models.CharField(max_length=64)
+        children = models.ManyToManyField('M2MSelfModel')
+        edit_suggestions = EditSuggestion(
+            m2m_fields=(({
+                             'name': 'children',
+                             'model': 'self',
+                         },)),
+            change_status_condition=condition_check,
+        )

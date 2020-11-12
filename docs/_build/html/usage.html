@@ -91,6 +91,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#diff-against-the-parent">Diff against the parent</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#publish">Publish</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#reject">Reject</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#m2m-fields">M2M Fields</a></li>
 </ul>
 </li>
 </ul>
@@ -242,6 +243,22 @@ a <code class="docutils literal notranslate"><span class="pre">django.contrib.au
 </div>
 <p>This will change the status from <code class="docutils literal notranslate"><span class="pre">edit_suggestion.Status.UNDER_REVIEWS</span></code> to <code class="docutils literal notranslate"><span class="pre">edit_suggestion.Status.REJECTED</span></code>.
 After rejecting, the edit suggestion won’t be able to be edited anymore.</p>
+</div>
+<div class="section" id="m2m-fields">
+<h2>M2M Fields<a class="headerlink" href="#m2m-fields" title="Permalink to this headline">¶</a></h2>
+<p>Can add ManyToManyField references by passing actual model or string. For referencing self instance use <code class="docutils literal notranslate"><span class="pre">'self'</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">M2MSelfModel</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+    <span class="n">children</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="s1">&#39;M2MSelfModel&#39;</span><span class="p">)</span>
+    <span class="n">edit_suggestions</span> <span class="o">=</span> <span class="n">EditSuggestion</span><span class="p">(</span>
+        <span class="n">m2m_fields</span><span class="o">=</span><span class="p">(({</span>
+                         <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;children&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="s1">&#39;self&#39;</span><span class="p">,</span>
+                     <span class="p">},)),</span>
+        <span class="n">change_status_condition</span><span class="o">=</span><span class="n">condition_check</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
 </div>
 </div>
 
