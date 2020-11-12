@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth.models import User, PermissionDenied
 from django_edit_suggestion.models import EditSuggestion
-from .models import SimpleParentModel, Tag, ParentModel
+from .models import SimpleParentModel, Tag, ParentModel, ParentM2MSelfModel
 
 
 class BaseFunctionsTest(TestCase):
@@ -31,6 +31,10 @@ class BaseFunctionsTest(TestCase):
             )
             api.save()
             api.tags.add(Tag.objects.get(id=1))
+
+        for a in ['parent with children 1', 'parent with children 1']:
+            ai = ParentM2MSelfModel(name=a)
+            ai.save()
 
     def create_simple_edit(self, parent_instance):
         users = User.objects.all()
@@ -73,6 +77,26 @@ class BaseFunctionsTest(TestCase):
         # check the base inheritance
         self.assertEqual(es.votes, 5)
         es.delete()
+
+    def test_m2m_str_refernce(self):
+        children = ParentM2MSelfModel.objects.all()
+        users = User.objects.all()
+        parent_instance = ParentM2MSelfModel.objects.get(id=1)
+        es1 = parent_instance.edit_suggestions.new({
+            'name': 'first edited',
+            'edit_suggestion_author': users[0]
+        })
+        es1.children.add(children[1])
+        es2 = parent_instance.edit_suggestions.new({
+            'name': 'second edited',
+            'edit_suggestion_author': users[1]
+        })
+        # check if they are both created
+        self.assertEqual(parent_instance.edit_suggestions.count(), 2)
+        self.assertIn(children[1], es1.children.all())
+        self.assertIsInstance(es1.children.first(), ParentM2MSelfModel)
+        es1.delete()
+        es2.delete()
 
     def test_editing(self):
         tags = Tag.objects.all()

@@ -221,9 +221,15 @@ class EditSuggestion(object):
             fields[field.name] = field
             # handle m2m fields
             for m2m_field in self.m2m_fields:
+                if type(m2m_field['model']) == str:
+                    if m2m_field['model'] == 'self':
+                        m2m_field['model'] = model
+                    else:
+                        m2m_field['model'] = __import__(m2m_field['model'])
                 fields[m2m_field['name']] = models.ManyToManyField(
                     to=m2m_field['model'],
-                    through=m2m_field['through'] if 'through' in m2m_field else None
+                    through=m2m_field['through'] if 'through' in m2m_field else None,
+                    related_name=self.get_related_name_for(m2m_field['name'])
                 )
         return fields
 

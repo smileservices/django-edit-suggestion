@@ -51,3 +51,20 @@ class ParentModel(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ParentM2MSelfModel(models.Model):
+    name = models.CharField(max_length=64)
+    children = models.ManyToManyField('ParentM2MSelfModel')
+    edit_suggestions = EditSuggestion(
+        m2m_fields=(({
+                         'name': 'children',
+                         'model': 'self',
+                     },)),
+        change_status_condition=condition_check,
+        bases=(VotableMixin,),  # optional. bases are used to build the edit suggestion model upon them
+        user_model=User,  # optional. uses the default user model
+    )
+
+    def __str__(self):
+        return self.name
