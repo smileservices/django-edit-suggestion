@@ -92,6 +92,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#publish">Publish</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#reject">Reject</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#m2m-fields">M2M Fields</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#django-rest-integration">Django REST integration</a></li>
 </ul>
 </li>
 </ul>
@@ -259,6 +260,53 @@ After rejecting, the edit suggestion won’t be able to be edited anymore.</p>
     <span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="django-rest-integration">
+<h2>Django REST integration<a class="headerlink" href="#django-rest-integration" title="Permalink to this headline">¶</a></h2>
+<p>In 1.23 comes with EditSuggestionSerializer and ModelViewsetWithEditSuggestion.</p>
+<p>The serializer is used for supplying the method <code class="docutils literal notranslate"><span class="pre">get_edit_suggestion_serializer</span></code>
+to the serializer for the model that receives edit suggestions.
+This method should return the edit suggestion serializer.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TagSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Tag</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="p">]</span>
+
+<span class="k">class</span> <span class="nc">ParentEditSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">ParentModel</span><span class="o">.</span><span class="n">edit_suggestions</span>
+    <span class="n">tags</span> <span class="o">=</span> <span class="n">TagSerializer</span><span class="p">(</span><span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">ParentModel</span><span class="o">.</span><span class="n">edit_suggestions</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;tags&#39;</span><span class="p">,</span> <span class="s1">&#39;edit_suggestion_reason&#39;</span><span class="p">,</span> <span class="s1">&#39;edit_suggestion_author&#39;</span><span class="p">]</span>
+
+<span class="k">class</span> <span class="nc">ParentSerializer</span><span class="p">(</span><span class="n">EditSuggestionSerializer</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">ParentModel</span><span class="o">.</span><span class="n">objects</span>
+    <span class="n">tags</span> <span class="o">=</span> <span class="n">TagSerializer</span><span class="p">(</span><span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">ParentModel</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;tags&#39;</span><span class="p">]</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_edit_suggestion_serializer</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">ParentEditSerializer</span>
+</pre></div>
+</div>
+<p>The ModelViewsetWithEditSuggestion is to be inherited from when creating the model viewset:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ParentViewset</span><span class="p">(</span><span class="n">ModelViewsetWithEditSuggestion</span><span class="p">):</span>
+<span class="n">serializer_class</span> <span class="o">=</span> <span class="n">ParentSerializer</span>
+<span class="n">queryset</span> <span class="o">=</span> <span class="n">ParentSerializer</span><span class="o">.</span><span class="n">queryset</span>
+</pre></div>
+</div>
+<p>It will add <code class="docutils literal notranslate"><span class="pre">edit_suggestions</span></code> for GET and <code class="docutils literal notranslate"><span class="pre">create_edit_suggestion</span></code> for POST requests.</p>
+<p>Thus, to <strong>retrieve the edit suggestions</strong> for a specific resource using django rest we would send
+a GET request to <code class="docutils literal notranslate"><span class="pre">reverse('parent-viewset-edit-suggestions',</span> <span class="pre">kwargs={'pk':</span> <span class="pre">1})</span></code></p>
+<p>The url in string form would be <code class="docutils literal notranslate"><span class="pre">/api/parent/1/create_edit_suggestion/</span></code></p>
+<p>To <strong>create</strong> an edit suggestion for a resource we will send a POST request  to <code class="docutils literal notranslate"><span class="pre">reverse('parent-viewset-create-edit-suggestion',</span> <span class="pre">kwargs={'pk':</span> <span class="pre">1})</span></code>
+The url in string form would be <code class="docutils literal notranslate"><span class="pre">/api/parent/1/edit_suggestions/</span></code></p>
 </div>
 </div>
 
