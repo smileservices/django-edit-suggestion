@@ -22,3 +22,10 @@ which will update the resource, or can be rejected. Users that pass a condition 
 Github Repo
 ~~~~~~~~~~~
 https://github.com/smileservices/django-edit-suggestion
+
+
+Changes
+~~~~~~~
+1.23:
+- change status to Production/Stable
+- add django_rest support with adding EditSuggestionSerializer and ModelViewsetWithEditSuggestion

@@ -1,0 +1,49 @@
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+
+class ModelViewsetWithEditSuggestion(ModelViewSet):
+
+    @action(methods=['GET'], detail=True)
+    def edit_suggestions(self, request, *args, **kwargs):
+        tech_instance = self.get_object()
+        if not hasattr(self.serializer_class, 'get_edit_suggestion_serializer'):
+            raise NotImplemented(
+                'Serializer class must have'
+                'get_edit_suggestion_serializer '
+                'static method that '
+                'returns edit suggestion serializer'
+            )
+        edit_suggestions_serializer = self.serializer_class.get_edit_suggestion_serializer()
+        serialized_data = edit_suggestions_serializer(tech_instance.edit_suggestions.all(), many=True)
+        return Response(serialized_data.data)
+
+    @action(methods=['POST'], detail=True)
+    def create_edit_suggestion(self, request, *args, **kwargs):
+        try:
+            tech_instance = self.get_object()
+            data_dict = {
+                'edit_suggestion_author': request.user,
+                'edit_suggestion_reason': request.data['edit_suggestion_reason'],
+            }
+            fields_simple, fields_m2m = tech_instance.edit_suggestions.get_tracked_fields()
+            # loop through fields and populate data_dict with values from request.data
+            for f in fields_simple:
+                if f in request.data:
+                    data_dict[f] = request.data[f]
+            edsug = tech_instance.edit_suggestions.new(data_dict)
+            # handle m2m data
+            for f in fields_m2m:
+                if f['name'] in request.data:
+                    m2m_objects = [obj for obj in f['model'].objects.filter(pk__in=request.data[f['name']])]
+                    m2m_attr = getattr(edsug, f['name'])
+                    m2m_attr.add(*m2m_objects)
+        except Exception as e:
+            return Response(status=401, data={
+                'error': True,
+                'message': str(e)
+            })
+        return Response(status=201, data={
+            'error': False
+        })

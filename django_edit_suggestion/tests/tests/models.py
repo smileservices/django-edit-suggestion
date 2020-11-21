@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth.models import User, PermissionDenied
 from django_edit_suggestion.models import EditSuggestion
-from .models import SimpleParentModel, Tag, ParentModel, ParentM2MSelfModel
+from ..models import SimpleParentModel, Tag, ParentModel, ParentM2MSelfModel
 
 
 class BaseFunctionsTest(TestCase):

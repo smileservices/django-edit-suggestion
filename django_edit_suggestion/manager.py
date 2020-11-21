@@ -33,3 +33,6 @@ class EditSuggestionManager(models.Manager):
     def new(self, data):
         data['edit_suggestion_parent'] = self.instance
         return self.create(**data)
+
+    def get_tracked_fields(self):
+        return self.model.edit_suggestion_tracked_fields['simple'],  self.model.edit_suggestion_tracked_fields['m2m']

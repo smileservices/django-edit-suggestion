@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: django-edit-suggestion
-Version: 1.22
+Version: 1.23
 Summary: A django package for creating multiple users editable models
 Home-page: https://github.com/smileservices/django-edit-suggestion
 Author: Vladimir Gorea
@@ -34,7 +34,7 @@ Description: # Django Edit Suggestion
         Requires to have Users
         
 Platform: UNKNOWN
-Classifier: Development Status :: 1 - Planning
+Classifier: Development Status :: 5 - Production/Stable
 Classifier: Intended Audience :: Science/Research
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: POSIX :: Linux

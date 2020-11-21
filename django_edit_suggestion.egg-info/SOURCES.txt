@@ -7,6 +7,8 @@ django_edit_suggestion/exceptions.py
 django_edit_suggestion/manager.py
 django_edit_suggestion/middleware.py
 django_edit_suggestion/models.py
+django_edit_suggestion/rest_serializers.py
+django_edit_suggestion/rest_views.py
 django_edit_suggestion.egg-info/PKG-INFO
 django_edit_suggestion.egg-info/SOURCES.txt
 django_edit_suggestion.egg-info/dependency_links.txt

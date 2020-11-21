@@ -9,6 +9,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.auth",
     "django.contrib.sessions",
+    "rest_framework",
 
     "django_edit_suggestion",  # package to be tested
     "django_edit_suggestion.tests",  # test module to be run
@@ -27,8 +28,14 @@ DEFAULT_SETTINGS = dict(
     DATABASES={
         "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"},
     },
-    MIDDLEWARE=MIDDLEWARE
+    MIDDLEWARE=MIDDLEWARE,
+    ROOT_URLCONF = 'django_edit_suggestion.tests.urls',
+    REST_FRAMEWORK={
+        'TEST_REQUEST_DEFAULT_FORMAT': 'json'
+    }
 )
+
+
 
 
 def main():

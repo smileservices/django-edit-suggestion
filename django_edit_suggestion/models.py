@@ -119,10 +119,10 @@ class EditSuggestion(object):
         )
 
     def set_tracked_fields(self, copied_fields):
-        self.tracked_fields['m2m'] = [f['name'] for f in self.m2m_fields]
+        self.tracked_fields['m2m'] = [f for f in self.m2m_fields]
         for field_name in copied_fields.keys():
             # exclude id and m2m fields
-            if field_name == 'id' or field_name in self.tracked_fields['m2m']:
+            if field_name == 'id' or field_name in [f['name'] for f in self.tracked_fields['m2m']]:
                 continue
             self.tracked_fields['simple'].append(field_name)
 
@@ -248,8 +248,8 @@ class EditSuggestion(object):
                 setattr(instance.edit_suggestion_parent, updatable_field, getattr(instance, updatable_field))
             # set m2m fields
             for m2m_field in self.tracked_fields['m2m']:
-                parent_m2m_field = getattr(instance.edit_suggestion_parent, m2m_field)
-                instance_m2m_field = getattr(instance, m2m_field)
+                parent_m2m_field = getattr(instance.edit_suggestion_parent, m2m_field['name'])
+                instance_m2m_field = getattr(instance, m2m_field['name'])
                 parent_m2m_field.set(instance_m2m_field.all())
             instance.edit_suggestion_parent.save()
             instance.edit_suggestion_status = self.Status.PUBLISHED

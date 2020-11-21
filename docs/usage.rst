@@ -119,3 +119,74 @@ Can add ManyToManyField references by passing actual model or string. For refere
                          },)),
             change_status_condition=condition_check,
         )
+
+
+Django REST integration
+~~~~~~~~~~~~~~~~~~~~~~~
+
+In 1.23 comes with EditSuggestionSerializer and ModelViewsetWithEditSuggestion.
+
+
+The serializer is used for supplying the method ``get_edit_suggestion_serializer``
+to the serializer for the model that receives edit suggestions.
+This method should return the edit suggestion serializer.
+
+.. code-block:: python
+
+    class TagSerializer(ModelSerializer):
+        queryset = Tag.objects
+
+        class Meta:
+            model = Tag
+            fields = ['name', ]
+
+    class ParentEditSerializer(ModelSerializer):
+        queryset = ParentModel.edit_suggestions
+        tags = TagSerializer(many=True)
+
+        class Meta:
+            model = ParentModel.edit_suggestions.model
+            fields = ['name', 'tags', 'edit_suggestion_reason', 'edit_suggestion_author']
+
+    class ParentSerializer(EditSuggestionSerializer):
+        queryset = ParentModel.objects
+        tags = TagSerializer(many=True)
+
+        class Meta:
+            model = ParentModel
+            fields = ['name', 'tags']
+
+        @staticmethod
+        def get_edit_suggestion_serializer():
+            return ParentEditSerializer
+
+The ModelViewsetWithEditSuggestion is to be inherited from when creating the model viewset:
+
+.. code-block:: python
+
+    class ParentViewset(ModelViewsetWithEditSuggestion):
+    serializer_class = ParentSerializer
+    queryset = ParentSerializer.queryset
+
+It will add ``edit_suggestions`` for GET and ``create_edit_suggestion`` for POST requests.
+
+.. code-block:: python
+    # urls.py
+    from rest_framework.routers import DefaultRouter
+    from django.urls import path, include
+    from .viewsets import ParentViewset
+
+    router = DefaultRouter()
+    router.register('parent', ParentViewset, basename='parent-viewset')
+
+    urlpatterns = [
+        path('api/', include(router.urls))
+    ]
+
+Thus, to **retrieve the edit suggestions** for a specific resource using django rest we would send
+a GET request to ``reverse('parent-viewset-edit-suggestions', kwargs={'pk': 1})``
+
+The url in string form would be ``/api/parent/1/create_edit_suggestion/``
+
+To **create** an edit suggestion for a resource we will send a POST request  to ``reverse('parent-viewset-create-edit-suggestion', kwargs={'pk': 1})``
+The url in string form would be ``/api/parent/1/edit_suggestions/``
