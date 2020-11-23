@@ -26,6 +26,10 @@ https://github.com/smileservices/django-edit-suggestion
 
 Changes
 ~~~~~~~
-1.23:
-- change status to Production/Stable
-- add django_rest support with adding EditSuggestionSerializer and ModelViewsetWithEditSuggestion
+
+1.24
+   #. add m2m support to ``diff_against_parent``
+
+1.23
+   #. change status to Production/Stable
+   #. add django_rest support with adding EditSuggestionSerializer and ModelViewsetWithEditSuggestion
