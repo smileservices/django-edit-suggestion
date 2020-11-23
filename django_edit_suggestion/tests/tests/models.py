@@ -27,6 +27,7 @@ class BaseFunctionsTest(TestCase):
         for a in ['advanced parent 1', 'advanced parent 2']:
             api = ParentModel(
                 name=a,
+                second_field='some value',
                 excluded_field=100
             )
             api.save()
@@ -157,3 +158,33 @@ class BaseFunctionsTest(TestCase):
         with self.assertRaises(PermissionDenied):
             esi.save()
         esi.delete()
+
+    def test_diff_against_parent(self):
+        parent_instance = ParentModel.objects.get(id=1)
+        esi = parent_instance.edit_suggestions.new({
+            'name':'edited',
+            'second_field': parent_instance.second_field
+        })
+        esi.tags.add(*[t for t in parent_instance.tags.all()])
+        changes = esi.diff_against_parent()
+
+        self.assertEqual(len(changes.changed_fields), 1)
+        self.assertEqual(len(changes.changes), 1)
+        self.assertEqual(changes.changed_fields, ['name'])
+        self.assertEqual(changes.changes[0].field, 'name')
+        self.assertEqual(changes.changes[0].new, esi.name)
+        self.assertEqual(changes.changes[0].old, parent_instance.name)
+
+        # test m2m changes
+        esi_m2m = parent_instance.edit_suggestions.new({
+            'name': parent_instance.name,
+            'second_field': parent_instance.second_field
+        })
+        esi_m2m.tags.add(Tag.objects.get(id=2))
+        changes = esi_m2m.diff_against_parent()
+        self.assertEqual(len(changes.changed_fields), 1)
+        self.assertEqual(len(changes.changes), 1)
+        self.assertEqual(changes.changed_fields, ['tags'])
+        self.assertEqual(changes.changes[0].field, 'tags')
+        self.assertEqual(changes.changes[0].new, [t for t in esi.tags.all()])
+        self.assertEqual(changes.changes[0].old, [t for t in parent_instance.tags.all()])

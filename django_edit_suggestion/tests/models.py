@@ -36,6 +36,7 @@ class SimpleParentModel(models.Model):
 
 class ParentModel(models.Model):
     name = models.CharField(max_length=64)
+    second_field = models.CharField(max_length=64, blank=True, null=True)
     excluded_field = models.IntegerField()
     tags = models.ManyToManyField(Tag)
     edit_suggestions = EditSuggestion(
