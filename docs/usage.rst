@@ -170,6 +170,8 @@ The ModelViewsetWithEditSuggestion is to be inherited from when creating the mod
 
 It will add ``edit_suggestions`` for GET and ``create_edit_suggestion`` for POST requests.
 
+Have ``edit_suggestion_publish`` and ``edit_suggestion_reject`` for POST requests.
+
 .. code-block:: python
     # urls.py
     from rest_framework.routers import DefaultRouter
@@ -184,9 +186,20 @@ It will add ``edit_suggestions`` for GET and ``create_edit_suggestion`` for POST
     ]
 
 Thus, to **retrieve the edit suggestions** for a specific resource using django rest we would send
-a GET request to ``reverse('parent-viewset-edit-suggestions', kwargs={'pk': 1})``
+a GET request to ``reverse('parent-viewset-edit-suggestions', kwargs={'pk': 1})``.
 
-The url in string form would be ``/api/parent/1/create_edit_suggestion/``
+The url in string form would be ``/api/parent/1/create_edit_suggestion/``.
 
-To **create** an edit suggestion for a resource we will send a POST request  to ``reverse('parent-viewset-create-edit-suggestion', kwargs={'pk': 1})``
-The url in string form would be ``/api/parent/1/edit_suggestions/``
+To **create** an edit suggestion for a resource we will send a POST request
+to ``reverse('parent-viewset-create-edit-suggestion', kwargs={'pk': 1})``
+The url in string form would be ``/api/parent/1/edit_suggestions/``.
+
+
+To publish using the viewset send a POST request to ``reverse('parent-viewset-edit-suggestion-publish', kwargs={'pk': 1})``
+with a json object having ``edit_suggestion_id`` key with the edit suggestion pk.
+
+To reject using the viewset send a POST request to ``reverse('parent-viewset-edit-suggestion-reject', kwargs={'pk': 1})``
+with a json object having ``edit_suggestion_id`` key with the edit suggestion pk and ``edit_suggestion_reject_reason`` as the reason for rejection.
+
+The responses will return status 403 if the rule does not verify, 401 for another exception and 200 for success.
+

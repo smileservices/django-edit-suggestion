@@ -302,11 +302,18 @@ This method should return the edit suggestion serializer.</p>
 </pre></div>
 </div>
 <p>It will add <code class="docutils literal notranslate"><span class="pre">edit_suggestions</span></code> for GET and <code class="docutils literal notranslate"><span class="pre">create_edit_suggestion</span></code> for POST requests.</p>
+<p>Have <code class="docutils literal notranslate"><span class="pre">edit_suggestion_publish</span></code> and <code class="docutils literal notranslate"><span class="pre">edit_suggestion_reject</span></code> for POST requests.</p>
 <p>Thus, to <strong>retrieve the edit suggestions</strong> for a specific resource using django rest we would send
-a GET request to <code class="docutils literal notranslate"><span class="pre">reverse('parent-viewset-edit-suggestions',</span> <span class="pre">kwargs={'pk':</span> <span class="pre">1})</span></code></p>
-<p>The url in string form would be <code class="docutils literal notranslate"><span class="pre">/api/parent/1/create_edit_suggestion/</span></code></p>
-<p>To <strong>create</strong> an edit suggestion for a resource we will send a POST request  to <code class="docutils literal notranslate"><span class="pre">reverse('parent-viewset-create-edit-suggestion',</span> <span class="pre">kwargs={'pk':</span> <span class="pre">1})</span></code>
-The url in string form would be <code class="docutils literal notranslate"><span class="pre">/api/parent/1/edit_suggestions/</span></code></p>
+a GET request to <code class="docutils literal notranslate"><span class="pre">reverse('parent-viewset-edit-suggestions',</span> <span class="pre">kwargs={'pk':</span> <span class="pre">1})</span></code>.</p>
+<p>The url in string form would be <code class="docutils literal notranslate"><span class="pre">/api/parent/1/create_edit_suggestion/</span></code>.</p>
+<p>To <strong>create</strong> an edit suggestion for a resource we will send a POST request
+to <code class="docutils literal notranslate"><span class="pre">reverse('parent-viewset-create-edit-suggestion',</span> <span class="pre">kwargs={'pk':</span> <span class="pre">1})</span></code>
+The url in string form would be <code class="docutils literal notranslate"><span class="pre">/api/parent/1/edit_suggestions/</span></code>.</p>
+<p>To publish using the viewset send a POST request to <code class="docutils literal notranslate"><span class="pre">reverse('parent-viewset-edit-suggestion-publish',</span> <span class="pre">kwargs={'pk':</span> <span class="pre">1})</span></code>
+with a json object having <code class="docutils literal notranslate"><span class="pre">edit_suggestion_id</span></code> key with the edit suggestion pk.</p>
+<p>To reject using the viewset send a POST request to <code class="docutils literal notranslate"><span class="pre">reverse('parent-viewset-edit-suggestion-reject',</span> <span class="pre">kwargs={'pk':</span> <span class="pre">1})</span></code>
+with a json object having <code class="docutils literal notranslate"><span class="pre">edit_suggestion_id</span></code> key with the edit suggestion pk and <code class="docutils literal notranslate"><span class="pre">edit_suggestion_reject_reason</span></code> as the reason for rejection.</p>
+<p>The responses will return status 403 if the rule does not verify, 401 for another exception and 200 for success.</p>
 </div>
 </div>
 

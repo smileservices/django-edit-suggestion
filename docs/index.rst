@@ -27,6 +27,10 @@ https://github.com/smileservices/django-edit-suggestion
 Changes
 ~~~~~~~
 
+1.25
+   #. add ``edit_suggestion_publish`` and ``edit_suggestion_reject`` to ``ModelViewsetWithEditSuggestion`` viewset
+   #. create tests for them
+
 1.24
    #. add m2m support to ``diff_against_parent``
 
