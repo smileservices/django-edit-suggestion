@@ -259,7 +259,7 @@ class EditSuggestion(object):
             if not self.change_status_condition(instance, user):
                 raise PermissionDenied('User not allowed to reject the edit suggestion')
             instance.edit_suggestion_status = self.Status.REJECTED
-            instance.reject_reason = reason
+            instance.edit_suggestion_reject_reason = reason
             instance.save()
 
         extra_fields = {

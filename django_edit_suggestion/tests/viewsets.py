@@ -1,5 +1,5 @@
 from django_edit_suggestion.rest_views import ModelViewsetWithEditSuggestion
-from .serializers import ParentSerializer
+from .serializers import ParentSerializer, ParentEditSerializer
 
 
 class ParentViewset(ModelViewsetWithEditSuggestion):

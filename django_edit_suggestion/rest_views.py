@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.core.exceptions import PermissionDenied
 
 
 class ModelViewsetWithEditSuggestion(ModelViewSet):
@@ -20,7 +21,7 @@ class ModelViewsetWithEditSuggestion(ModelViewSet):
         return Response(serialized_data.data)
 
     @action(methods=['POST'], detail=True)
-    def create_edit_suggestion(self, request, *args, **kwargs):
+    def edit_suggestion_create(self, request, *args, **kwargs):
         try:
             tech_instance = self.get_object()
             data_dict = {
@@ -45,5 +46,51 @@ class ModelViewsetWithEditSuggestion(ModelViewSet):
                 'message': str(e)
             })
         return Response(status=201, data={
+            'error': False
+        })
+
+    @action(methods=['POST'], detail=True)
+    def edit_suggestion_publish(self, request, *args, **kwargs):
+        try:
+            parent = self.get_object()
+            edit_instance = parent.edit_suggestions.get(
+                pk=request.data['edit_suggestion_id'],
+                edit_suggestion_parent=parent
+            )
+            edit_instance.edit_suggestion_publish(request.user)
+        except PermissionDenied as e:
+            return Response(status=403, data={
+                'error': True,
+                'message': str(e)
+            })
+        except Exception as e:
+            return Response(status=401, data={
+                'error': True,
+                'message': str(e)
+            })
+        return Response(status=200, data={
+            'error': False
+        })
+
+    @action(methods=['POST'], detail=True)
+    def edit_suggestion_reject(self, request, *args, **kwargs):
+        try:
+            parent = self.get_object()
+            edit_instance = parent.edit_suggestions.get(
+                pk=request.data['edit_suggestion_id'],
+                edit_suggestion_parent=parent
+            )
+            edit_instance.edit_suggestion_reject(request.user, request.data['edit_suggestion_reject_reason'])
+        except PermissionDenied as e:
+            return Response(status=403, data={
+                'error': True,
+                'message': str(e)
+            })
+        except Exception as e:
+            return Response(status=401, data={
+                'error': True,
+                'message': str(e)
+            })
+        return Response(status=200, data={
             'error': False
         })

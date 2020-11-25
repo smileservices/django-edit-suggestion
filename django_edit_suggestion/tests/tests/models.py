@@ -186,5 +186,5 @@ class BaseFunctionsTest(TestCase):
         self.assertEqual(len(changes.changes), 1)
         self.assertEqual(changes.changed_fields, ['tags'])
         self.assertEqual(changes.changes[0].field, 'tags')
-        self.assertEqual(changes.changes[0].new, [t for t in esi.tags.all()])
+        self.assertEqual(changes.changes[0].new, [t for t in esi_m2m.tags.all()])
         self.assertEqual(changes.changes[0].old, [t for t in parent_instance.tags.all()])
