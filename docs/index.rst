@@ -27,6 +27,9 @@ https://github.com/smileservices/django-edit-suggestion
 Changes
 ~~~~~~~
 
+1.26
+   #. REST viewset ``edit-suggestion-create`` returns serialized instance of edit suggestion
+
 1.25
    #. add ``edit_suggestion_publish`` and ``edit_suggestion_reject`` to ``ModelViewsetWithEditSuggestion`` viewset
    #. create tests for them
