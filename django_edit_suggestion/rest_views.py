@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import status
 from django.core.exceptions import PermissionDenied
 
 
@@ -40,14 +41,14 @@ class ModelViewsetWithEditSuggestion(ModelViewSet):
                     m2m_objects = [obj for obj in f['model'].objects.filter(pk__in=request.data[f['name']])]
                     m2m_attr = getattr(edsug, f['name'])
                     m2m_attr.add(*m2m_objects)
+            serializer = self.serializer_class.get_edit_suggestion_serializer()
+
         except Exception as e:
             return Response(status=401, data={
                 'error': True,
                 'message': str(e)
             })
-        return Response(status=201, data={
-            'error': False
-        })
+        return Response(serializer(edsug).data, status=status.HTTP_201_CREATED)
 
     @action(methods=['POST'], detail=True)
     def edit_suggestion_publish(self, request, *args, **kwargs):
@@ -94,3 +95,16 @@ class ModelViewsetWithEditSuggestion(ModelViewSet):
         return Response(status=200, data={
             'error': False
         })
+
+    @action(methods=['GET'], detail=False)
+    def edit_suggestions_all(self, request, *args, **kwargs):
+        # todo get all edit suggestions for particular model
+        queryset = self.serializer_class.model.edit_suggestions.all()
+        page = self.paginate_queryset(queryset)
+
+        # if page is not None:
+        #     serializer = serializers.ProblemEditSuggestionSerializer(page, many=True)
+        #     return self.get_paginated_response(serializer.data)
+        #
+        # serializer = serializers.ProblemEditSuggestionSerializer(queryset, many=True)
+        # return Response(serializer.data)

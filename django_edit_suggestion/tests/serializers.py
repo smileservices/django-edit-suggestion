@@ -18,7 +18,7 @@ class ParentEditSerializer(ModelSerializer):
 
     class Meta:
         model = ParentModel.edit_suggestions.model
-        fields = ['name', 'tags', 'edit_suggestion_reason', 'edit_suggestion_author']
+        fields = ['pk', 'name', 'tags', 'edit_suggestion_reason', 'edit_suggestion_author']
 
 
 class ParentSerializer(EditSuggestionSerializer):

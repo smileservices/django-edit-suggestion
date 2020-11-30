@@ -21,6 +21,9 @@ class DjangoRestViews(APITestCase):
         response = self.client.post(url, {'name': 'edited', 'edit_suggestion_reason': 'test', 'tags': [1, 2]},
                                     format='json')
         self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['name'], 'edited')
+        self.assertEqual(response.data['pk'], 1)
+
         parent = ParentModel.objects.get(pk=1)
         ed_sug = parent.edit_suggestions.latest()
         self.assertEqual(ed_sug.edit_suggestion_author, logged_user)
@@ -103,7 +106,9 @@ class DjangoRestViews(APITestCase):
         # test for authorized user
         staff_user = User.objects.create(username='staff', password=123, is_staff=True)
         self.client.force_login(staff_user)
-        reject_authorized_response = self.client.post(reject_url, {'edit_suggestion_id': ed_sug.pk, 'edit_suggestion_reject_reason': 'just test'}, format='json')
+        reject_authorized_response = self.client.post(reject_url, {'edit_suggestion_id': ed_sug.pk,
+                                                                   'edit_suggestion_reject_reason': 'just test'},
+                                                      format='json')
         ref_ed_sug = parent.edit_suggestions.latest()
 
         self.assertEqual(reject_authorized_response.status_code, 200)

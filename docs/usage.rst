@@ -195,10 +195,10 @@ to ``reverse('parent-viewset-create-edit-suggestion', kwargs={'pk': 1})``
 The url in string form would be ``/api/parent/1/edit_suggestions/``.
 
 
-To publish using the viewset send a POST request to ``reverse('parent-viewset-edit-suggestion-publish', kwargs={'pk': 1})``
+To **publish** using the viewset send a POST request to ``reverse('parent-viewset-edit-suggestion-publish', kwargs={'pk': 1})``
 with a json object having ``edit_suggestion_id`` key with the edit suggestion pk.
 
-To reject using the viewset send a POST request to ``reverse('parent-viewset-edit-suggestion-reject', kwargs={'pk': 1})``
+To **reject** using the viewset send a POST request to ``reverse('parent-viewset-edit-suggestion-reject', kwargs={'pk': 1})``
 with a json object having ``edit_suggestion_id`` key with the edit suggestion pk and ``edit_suggestion_reject_reason`` as the reason for rejection.
 
 The responses will return status 403 if the rule does not verify, 401 for another exception and 200 for success.
