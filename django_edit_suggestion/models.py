@@ -32,6 +32,8 @@ class EditSuggestion(object):
     def __init__(
             self,
             change_status_condition,
+            post_publish=None,
+            post_reject=None,
             # m2m fields arg
             # tuple of dicts with keys 'name','model','through'-optional
             excluded_fields=None,
@@ -45,6 +47,8 @@ class EditSuggestion(object):
             related_name=None,
     ):
         self.change_status_condition = change_status_condition
+        self.post_publish = post_publish
+        self.post_reject = post_reject
         self.user_set_verbose_name = verbose_name
         self.user_model = user_model
         self.m2m_fields = m2m_fields if m2m_fields else []
@@ -254,6 +258,7 @@ class EditSuggestion(object):
             instance.edit_suggestion_parent.save()
             instance.edit_suggestion_status = self.Status.PUBLISHED
             instance.save()
+            self.post_publish(instance, user) if self.post_publish else None
 
         def reject(instance, user, reason):
             if not self.change_status_condition(instance, user):
@@ -261,6 +266,7 @@ class EditSuggestion(object):
             instance.edit_suggestion_status = self.Status.REJECTED
             instance.edit_suggestion_reject_reason = reason
             instance.save()
+            self.post_reject(instance, user, reason) if self.post_reject else None
 
         extra_fields = {
             "id": models.AutoField(primary_key=True),

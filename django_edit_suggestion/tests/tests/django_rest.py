@@ -23,6 +23,7 @@ class DjangoRestViews(APITestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['name'], 'edited')
         self.assertEqual(response.data['pk'], 1)
+        self.assertEqual(response.data['edit_suggestion_author'], logged_user.pk)
 
         parent = ParentModel.objects.get(pk=1)
         ed_sug = parent.edit_suggestions.latest()

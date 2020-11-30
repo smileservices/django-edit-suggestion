@@ -26,6 +26,8 @@ https://github.com/smileservices/django-edit-suggestion
 
 Changes
 ~~~~~~~
+1.27
+   #. Add post_publish/post_reject hooks
 
 1.26
    #. REST viewset ``edit-suggestion-create`` returns serialized instance of edit suggestion

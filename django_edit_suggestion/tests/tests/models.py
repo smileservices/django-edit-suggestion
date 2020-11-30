@@ -130,6 +130,9 @@ class BaseFunctionsTest(TestCase):
         # when published, it will update the parent instance and change the status to published
         self.assertEqual(parent_instance.name, esi.name)
         self.assertEqual(esi.edit_suggestion_status, EditSuggestion.Status.PUBLISHED)
+        # test post_publish hook
+        user = User.objects.get(pk=user[2].pk)
+        self.assertEqual(user.username, 'published')
 
         # cannot edit now
         esi.name = 'edit impossible'
@@ -152,12 +155,16 @@ class BaseFunctionsTest(TestCase):
         # when published, it will update the parent instance and change the status to published
         self.assertNotEqual(parent_instance.name, esi.name)
         self.assertEqual(esi.edit_suggestion_status, EditSuggestion.Status.REJECTED)
+        # test the post reject hook
+        user = User.objects.get(pk=user[2].pk)
+        self.assertEqual(user.username, 'rejected')
 
         # cannot edit now
         esi.name = 'edit impossible'
         with self.assertRaises(PermissionDenied):
             esi.save()
         esi.delete()
+
 
     def test_diff_against_parent(self):
         parent_instance = ParentModel.objects.get(id=1)

@@ -24,10 +24,22 @@ def condition_check(edit_suggestion_instance, user):
     return False
 
 
+def post_publish(instance, user):
+    user.username = 'published'
+    user.save()
+
+
+def post_reject(instance, user, reason):
+    user.username = 'rejected'
+    user.save()
+
+
 class SimpleParentModel(models.Model):
     name = models.CharField(max_length=64)
     edit_suggestions = EditSuggestion(
         change_status_condition=condition_check,
+        post_publish=post_publish,
+        post_reject=post_reject,
     )
 
     def __str__(self):
