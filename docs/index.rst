@@ -26,6 +26,8 @@ https://github.com/smileservices/django-edit-suggestion
 
 Changes
 ~~~~~~~
+1.28
+   #. ``edit_suggestions`` REST view returns paginated results. Can be filtered by status ex: ``api/resources/88/edit_suggestions/?status=0``
 1.27
    #. Add post_publish/post_reject hooks
 
