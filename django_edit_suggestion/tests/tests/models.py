@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth.models import User, PermissionDenied
 from django_edit_suggestion.models import EditSuggestion
-from ..models import SimpleParentModel, Tag, ParentModel, ParentM2MSelfModel
+from ..models import SimpleParentModel, Tag, ParentModel, ParentM2MSelfModel, SharedChild, ParentM2MThroughModel
 
 
 class BaseFunctionsTest(TestCase):
@@ -79,7 +79,7 @@ class BaseFunctionsTest(TestCase):
         self.assertEqual(es.votes, 5)
         es.delete()
 
-    def test_m2m_str_refernce(self):
+    def test_m2m_str_reference(self):
         children = ParentM2MSelfModel.objects.all()
         users = User.objects.all()
         parent_instance = ParentM2MSelfModel.objects.get(id=1)
@@ -165,11 +165,10 @@ class BaseFunctionsTest(TestCase):
             esi.save()
         esi.delete()
 
-
     def test_diff_against_parent(self):
         parent_instance = ParentModel.objects.get(id=1)
         esi = parent_instance.edit_suggestions.new({
-            'name':'edited',
+            'name': 'edited',
             'second_field': parent_instance.second_field
         })
         esi.tags.add(*[t for t in parent_instance.tags.all()])
@@ -195,3 +194,31 @@ class BaseFunctionsTest(TestCase):
         self.assertEqual(changes.changes[0].field, 'tags')
         self.assertEqual(changes.changes[0].new, [t for t in esi_m2m.tags.all()])
         self.assertEqual(changes.changes[0].old, [t for t in parent_instance.tags.all()])
+
+    def test_m2m_through_table(self):
+        edit_user = User.objects.create(username='edit user')
+        admin_user = User.objects.get(is_staff=True)
+        # test model with m2m field that uses a custom through table
+        schild = SharedChild.objects.create(name='parent child')
+        echild = SharedChild.objects.create(name='edit child')
+        parent = ParentM2MThroughModel.objects.create(name='parent')
+        parent.children.through.objects.create(parent=parent, shared_child=schild, order=1)
+        self.assertEqual(parent.children.through.objects.count(), 1)
+
+        edited = parent.edit_suggestions.new(dict(
+            name='edited',
+            edit_suggestion_author=edit_user
+        ))
+        edited.children.through.objects.create(parent=edited, shared_child=echild, order=2)
+        self.assertEqual(edited.children.through.objects.count(), 1)
+        self.assertEqual(edited.children.through.objects.first().shared_child, echild)
+        self.assertEqual(edited.children.through.objects.first().order, 2)
+        # test publish
+        edited.edit_suggestion_publish(user=admin_user)
+        parent_child_through = parent.children.through.objects.all()[0]
+        edited_child_through = edited.children.through.objects.all()[0]
+        self.assertEqual(parent.name, edited.name)
+        self.assertEqual(parent.children.through.objects.count(), 1)
+        self.assertEqual(parent_child_through.shared_child, edited_child_through.shared_child)
+        self.assertEqual(parent_child_through.order, edited_child_through.order)
+

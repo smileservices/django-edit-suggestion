@@ -150,7 +150,7 @@ class EditSuggestion(object):
             models_module = app.name
             attrs["__module__"] = models_module
 
-        fields = self.copy_fields(model)
+        fields = {**self.copy_fields(model), **self.copy_m2m_fields(model)}
         self.set_tracked_fields(fields)
         attrs.update(fields)
         attrs.update(self.get_extra_fields(model, fields))
@@ -223,19 +223,66 @@ class EditSuggestion(object):
             else:
                 transform_field(field)
             fields[field.name] = field
-            # handle m2m fields
-            for m2m_field in self.m2m_fields:
-                if type(m2m_field['model']) == str:
-                    if m2m_field['model'] == 'self':
-                        m2m_field['model'] = model
-                    else:
-                        m2m_field['model'] = __import__(m2m_field['model'])
-                fields[m2m_field['name']] = models.ManyToManyField(
-                    to=m2m_field['model'],
-                    through=m2m_field['through'] if 'through' in m2m_field else None,
-                    related_name=self.get_related_name_for(m2m_field['name'])
-                )
         return fields
+
+    def copy_m2m_fields(self, model):
+        # handle m2m fields
+        fields = {}
+        for m2m_field in self.m2m_fields:
+            if type(m2m_field['model']) == str:
+                if m2m_field['model'] == 'self':
+                    m2m_field['model'] = model
+                else:
+                    m2m_field['model'] = __import__(m2m_field['model'])
+            through = None
+            if 'through' in m2m_field:
+                # create new pivot table
+                through = self.clone_pivot_table(model, m2m_field)
+            fields[m2m_field['name']] = models.ManyToManyField(
+                to=m2m_field['model'],
+                through=through,
+                related_name=self.get_related_name_for(m2m_field['name'])
+            )
+        return fields
+
+    def clone_pivot_table(self, model, m2m_field):
+        attrs = {
+            "__module__": self.module,
+        }
+
+        app_module = "%s.models" % model._meta.app_label
+        parent_model_name = self.get_edit_suggestion_model_name(model)
+
+        if model.__module__ != self.module:
+            # registered under different app
+            attrs["__module__"] = self.module
+        elif app_module != self.module:
+            # Abuse an internal API because the app registry is loading.
+            app = apps.app_configs[model._meta.app_label]
+            models_module = app.name
+            attrs["__module__"] = models_module
+
+        fields = self.copy_fields(m2m_field['through']['model'])
+        del fields['id']
+        # add parent and relation fields
+        field_args = dict(
+            db_constraint=False,
+            related_name="+",
+            null=True,
+            blank=True,
+            primary_key=False,
+            db_index=True,
+            serialize=True,
+            unique=False,
+            on_delete=models.CASCADE,
+        )
+        fields[m2m_field['through']['self_field']] = models.ForeignKey(parent_model_name, **field_args)
+
+        attrs.update(fields)
+        name = self.get_edit_suggestion_model_name(m2m_field['through']['model'])
+        edit_suggestion_through_model = type(str(name), (models.Model,), attrs)
+        return edit_suggestion_through_model
+
 
     def get_extra_fields(self, model, fields):
         """
@@ -246,6 +293,7 @@ class EditSuggestion(object):
             return f'Edit Suggestion by {instance.edit_suggestion_author} for "{instance.edit_suggestion_parent}"'
 
         def publish(instance, user):
+            # instance is the current edit suggestion
             if not self.change_status_condition(instance, user):
                 raise PermissionDenied('User not allowed to publish the edit suggestion')
             for updatable_field in self.tracked_fields['simple']:
@@ -254,7 +302,20 @@ class EditSuggestion(object):
             for m2m_field in self.tracked_fields['m2m']:
                 parent_m2m_field = getattr(instance.edit_suggestion_parent, m2m_field['name'])
                 instance_m2m_field = getattr(instance, m2m_field['name'])
-                parent_m2m_field.set(instance_m2m_field.all())
+                if 'through' in m2m_field:
+                    # clear the parent through records
+                    parent_m2m_field.through.objects.all().delete()
+                    # get data from edit through records and create parent through records
+                    through_fields = filter(lambda x: x.name not in ['id', m2m_field['through']['self_field']], instance_m2m_field.through._meta.fields)
+                    for child in instance_m2m_field.through.objects.all():
+                        data = {
+                            m2m_field['through']['self_field']: instance.edit_suggestion_parent
+                        }
+                        for f in through_fields:
+                            data[f.name] = getattr(child, f.name)
+                        parent_m2m_field.through.objects.create(**data)
+                else:
+                    parent_m2m_field.set(instance_m2m_field.all())
             instance.edit_suggestion_parent.save()
             instance.edit_suggestion_status = self.Status.PUBLISHED
             instance.save()
