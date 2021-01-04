@@ -92,7 +92,9 @@
 <li class="toctree-l2"><a class="reference internal" href="#publish">Publish</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#reject">Reject</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#m2m-fields">M2M Fields</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#m2m-through-support">M2M Through support</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#django-rest-integration">Django REST integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#django-rest-integration-for-m2m-through">Django REST integration for <code class="docutils literal notranslate"><span class="pre">m2m</span> <span class="pre">through</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -261,10 +263,50 @@ After rejecting, the edit suggestion won’t be able to be edited anymore.</p>
 </pre></div>
 </div>
 </div>
+<div class="section" id="m2m-through-support">
+<h2>M2M Through support<a class="headerlink" href="#m2m-through-support" title="Permalink to this headline">¶</a></h2>
+<p>Can use ManyToManyField with <code class="docutils literal notranslate"><span class="pre">through</span></code> table. The original pivot table will get copied and modified to point to the edit suggestion model.
+To save/edit the edit suggestion with <code class="docutils literal notranslate"><span class="pre">m2m</span> <span class="pre">through</span></code> field need to use a custom method.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SharedChild</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+
+<span class="k">class</span> <span class="nc">SharedChildOrder</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;ParentM2MThroughModel&#39;</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
+    <span class="n">shared_child</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">SharedChild</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">ParentM2MThroughModel</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+    <span class="n">children</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="n">SharedChild</span><span class="p">,</span> <span class="n">through</span><span class="o">=</span><span class="n">SharedChildOrder</span><span class="p">)</span>
+    <span class="n">edit_suggestions</span> <span class="o">=</span> <span class="n">EditSuggestion</span><span class="p">(</span>
+        <span class="n">m2m_fields</span><span class="o">=</span><span class="p">(({</span>
+                         <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;children&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">SharedChild</span><span class="p">,</span>
+                         <span class="s1">&#39;through&#39;</span><span class="p">:</span> <span class="p">{</span>
+                             <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">SharedChildOrder</span><span class="p">,</span>
+                             <span class="s1">&#39;self_field&#39;</span><span class="p">:</span> <span class="s1">&#39;parent&#39;</span><span class="p">,</span>
+                         <span class="p">},</span>
+                     <span class="p">},)),</span>
+        <span class="n">change_status_condition</span><span class="o">=</span><span class="n">condition_check</span><span class="p">,</span>
+        <span class="n">bases</span><span class="o">=</span><span class="p">(</span><span class="n">VotableMixin</span><span class="p">,),</span>  <span class="c1"># optional. bases are used to build the edit suggestion model upon them</span>
+        <span class="n">user_model</span><span class="o">=</span><span class="n">User</span><span class="p">,</span>  <span class="c1"># optional. uses the default user model</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="django-rest-integration">
 <h2>Django REST integration<a class="headerlink" href="#django-rest-integration" title="Permalink to this headline">¶</a></h2>
 <p>In 1.23 comes with EditSuggestionSerializer and ModelViewsetWithEditSuggestion.</p>
+<p>There are 2 serializers: the one for listing (with minimal informations) and the one for detail/form view with all info.</p>
 <p>The serializer is used for supplying the method <code class="docutils literal notranslate"><span class="pre">get_edit_suggestion_serializer</span></code>
+to the serializer for the model that receives edit suggestions.
+This method should return the edit suggestion serializer.</p>
+<p>The serializer is used for supplying the method <code class="docutils literal notranslate"><span class="pre">get_edit_suggestion_listing_serializer</span></code>
 to the serializer for the model that receives edit suggestions.
 This method should return the edit suggestion serializer.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TagSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
@@ -273,6 +315,13 @@ This method should return the edit suggestion serializer.</p>
     <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">Tag</span>
         <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="p">]</span>
+
+<span class="k">class</span> <span class="nc">ParentEditListingSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+<span class="n">queryset</span> <span class="o">=</span> <span class="n">ParentModel</span><span class="o">.</span><span class="n">edit_suggestions</span>
+
+<span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">ParentModel</span><span class="o">.</span><span class="n">edit_suggestions</span><span class="o">.</span><span class="n">model</span>
+    <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;pk&#39;</span><span class="p">,</span> <span class="s1">&#39;edit_suggestion_reason&#39;</span><span class="p">,</span> <span class="s1">&#39;edit_suggestion_author&#39;</span><span class="p">,</span> <span class="s1">&#39;edit_suggestion_date_created&#39;</span><span class="p">]</span>
 
 <span class="k">class</span> <span class="nc">ParentEditSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
     <span class="n">queryset</span> <span class="o">=</span> <span class="n">ParentModel</span><span class="o">.</span><span class="n">edit_suggestions</span>
@@ -293,6 +342,10 @@ This method should return the edit suggestion serializer.</p>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_edit_suggestion_serializer</span><span class="p">():</span>
         <span class="k">return</span> <span class="n">ParentEditSerializer</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_edit_suggestion_listing_serializer</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">ParentEditListingSerializer</span>
 </pre></div>
 </div>
 <p>The ModelViewsetWithEditSuggestion is to be inherited from when creating the model viewset:</p>
@@ -314,6 +367,13 @@ with a json object having <code class="docutils literal notranslate"><span class
 <p>To <strong>reject</strong> using the viewset send a POST request to <code class="docutils literal notranslate"><span class="pre">reverse('parent-viewset-edit-suggestion-reject',</span> <span class="pre">kwargs={'pk':</span> <span class="pre">1})</span></code>
 with a json object having <code class="docutils literal notranslate"><span class="pre">edit_suggestion_id</span></code> key with the edit suggestion pk and <code class="docutils literal notranslate"><span class="pre">edit_suggestion_reject_reason</span></code> as the reason for rejection.</p>
 <p>The responses will return status 403 if the rule does not verify, 401 for another exception and 200 for success.</p>
+</div>
+<div class="section" id="django-rest-integration-for-m2m-through">
+<h2>Django REST integration for <code class="docutils literal notranslate"><span class="pre">m2m</span> <span class="pre">through</span></code><a class="headerlink" href="#django-rest-integration-for-m2m-through" title="Permalink to this headline">¶</a></h2>
+<p>In 1.30 we can handle creating edit suggestions with through m2m fields. It’s the same procedure as with creating a normal edit suggestion but
+for the through m2m data we are using this data structure in the POST:</p>
+<p>The creation is handled by the <code class="docutils literal notranslate"><span class="pre">edit_suggestion_handle_m2m_through_field</span></code> method of <code class="docutils literal notranslate"><span class="pre">ModelViewsetWithEditSuggestion</span></code> viewset.
+If there is a need to handle this in a different way, just override the method in your viewset.</p>
 </div>
 </div>
 

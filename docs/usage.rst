@@ -120,14 +120,57 @@ Can add ManyToManyField references by passing actual model or string. For refere
             change_status_condition=condition_check,
         )
 
+M2M Through support
+~~~~~~~~~~~~~~~~~~~
+
+Can use ManyToManyField with ``through`` table. The original pivot table will get copied and modified to point to the edit suggestion model.
+To save/edit the edit suggestion with ``m2m through`` field need to use a custom method.
+
+.. code-block:: python
+
+    class SharedChild(models.Model):
+        name = models.CharField(max_length=64)
+
+        def __str__(self):
+            return self.name
+
+
+    class SharedChildOrder(models.Model):
+        parent = models.ForeignKey('ParentM2MThroughModel', on_delete=models.CASCADE)
+        shared_child = models.ForeignKey(SharedChild, on_delete=models.CASCADE)
+        order = models.IntegerField(default=0)
+
+
+    class ParentM2MThroughModel(models.Model):
+        name = models.CharField(max_length=64)
+        children = models.ManyToManyField(SharedChild, through=SharedChildOrder)
+        edit_suggestions = EditSuggestion(
+            m2m_fields=(({
+                             'name': 'children',
+                             'model': SharedChild,
+                             'through': {
+                                 'model': SharedChildOrder,
+                                 'self_field': 'parent',
+                             },
+                         },)),
+            change_status_condition=condition_check,
+            bases=(VotableMixin,),  # optional. bases are used to build the edit suggestion model upon them
+            user_model=User,  # optional. uses the default user model
+        )
+
 
 Django REST integration
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 In 1.23 comes with EditSuggestionSerializer and ModelViewsetWithEditSuggestion.
 
+There are 2 serializers: the one for listing (with minimal informations) and the one for detail/form view with all info.
 
 The serializer is used for supplying the method ``get_edit_suggestion_serializer``
+to the serializer for the model that receives edit suggestions.
+This method should return the edit suggestion serializer.
+
+The serializer is used for supplying the method ``get_edit_suggestion_listing_serializer``
 to the serializer for the model that receives edit suggestions.
 This method should return the edit suggestion serializer.
 
@@ -139,6 +182,13 @@ This method should return the edit suggestion serializer.
         class Meta:
             model = Tag
             fields = ['name', ]
+
+    class ParentEditListingSerializer(ModelSerializer):
+    queryset = ParentModel.edit_suggestions
+
+    class Meta:
+        model = ParentModel.edit_suggestions.model
+        fields = ['pk', 'edit_suggestion_reason', 'edit_suggestion_author', 'edit_suggestion_date_created']
 
     class ParentEditSerializer(ModelSerializer):
         queryset = ParentModel.edit_suggestions
@@ -159,6 +209,10 @@ This method should return the edit suggestion serializer.
         @staticmethod
         def get_edit_suggestion_serializer():
             return ParentEditSerializer
+
+        @staticmethod
+        def get_edit_suggestion_listing_serializer():
+            return ParentEditListingSerializer
 
 The ModelViewsetWithEditSuggestion is to be inherited from when creating the model viewset:
 
@@ -203,3 +257,19 @@ with a json object having ``edit_suggestion_id`` key with the edit suggestion pk
 
 The responses will return status 403 if the rule does not verify, 401 for another exception and 200 for success.
 
+
+Django REST integration for ``m2m through``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In 1.30 we can handle creating edit suggestions with through m2m fields. It's the same procedure as with creating a normal edit suggestion but
+for the through m2m data we are using this data structure in the POST:
+
+.. code-block:: javascript
+    [{
+        'pk': {{child pk}},
+        'field_1': 'bla bla',
+        'field_2': 'bla bla'
+    },]
+
+The creation is handled by the ``edit_suggestion_handle_m2m_through_field`` method of ``ModelViewsetWithEditSuggestion`` viewset.
+If there is a need to handle this in a different way, just override the method in your viewset.

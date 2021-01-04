@@ -167,7 +167,9 @@
 <li class="toctree-l2"><a class="reference internal" href="usage.html#publish">Publish</a></li>
 <li class="toctree-l2"><a class="reference internal" href="usage.html#reject">Reject</a></li>
 <li class="toctree-l2"><a class="reference internal" href="usage.html#m2m-fields">M2M Fields</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#m2m-through-support">M2M Through support</a></li>
 <li class="toctree-l2"><a class="reference internal" href="usage.html#django-rest-integration">Django REST integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#django-rest-integration-for-m2m-through">Django REST integration for <code class="docutils literal notranslate"><span class="pre">m2m</span> <span class="pre">through</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -185,6 +187,18 @@ which will update the resource, or can be rejected. Users that pass a condition 
 <div class="section" id="changes">
 <h2>Changes<a class="headerlink" href="#changes" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
+<dt>1.31</dt><dd><ol class="arabic simple">
+<li><p>rest_views: use edit suggestion listing serializer when retrieving the list of edit suggestions</p></li>
+</ol>
+</dd>
+<dt>1.30</dt><dd><ol class="arabic simple">
+<li><p>add m2m through support in rest views and refactor the create edit suggestion</p></li>
+</ol>
+</dd>
+<dt>1.29</dt><dd><ol class="arabic simple">
+<li><p>add m2m through support</p></li>
+</ol>
+</dd>
 <dt>1.28</dt><dd><ol class="arabic simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">edit_suggestions</span></code> REST view returns paginated results. Can be filtered by status ex: <code class="docutils literal notranslate"><span class="pre">api/resources/88/edit_suggestions/?status=0</span></code></p></li>
 </ol>

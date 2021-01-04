@@ -106,6 +106,7 @@ class ParentM2MThroughModel(models.Model):
                          'through': {
                              'model': SharedChildOrder,
                              'self_field': 'parent',
+                             'rel_field': 'shared_child'
                          },
                      },)),
         change_status_condition=condition_check,

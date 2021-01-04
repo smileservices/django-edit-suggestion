@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase
 from django.urls import reverse
-from ..models import ParentModel, Tag, EditSuggestion
+from ..models import ParentModel, Tag, EditSuggestion, ParentM2MThroughModel, SharedChild
 
 
 class DjangoRestViews(APITestCase):
@@ -44,7 +44,6 @@ class DjangoRestViews(APITestCase):
         url = reverse('parent-viewset-edit-suggestions', kwargs={'pk': 2})
         response = self.client.get(url, format='json')
         self.assertEqual(len(response.data), 2)
-        self.assertEqual(response.data[0]['name'], 'edit 2')
 
     def test_publish_edit_suggestion(self):
         url = reverse('parent-viewset-edit-suggestion-create', kwargs={'pk': 2})
@@ -117,3 +116,48 @@ class DjangoRestViews(APITestCase):
 
         updated_parent = ParentModel.objects.get(pk=2)
         self.assertNotEqual(updated_parent.name, ref_ed_sug.name)
+
+    def test_edit_suggestion_m2m_through(self):
+        # test model with m2m field that uses a custom through table
+        edit_user = User.objects.create(username='edit user')
+
+        schild = SharedChild.objects.create(name='parent child')
+        echild = SharedChild.objects.create(name='edit child')
+        parent = ParentM2MThroughModel.objects.create(name='parent m2m through')
+        parent.children.through.objects.create(parent=parent, shared_child=schild, order=1)
+
+        child_separate = SharedChild.objects.create(name='separate')
+        parent_separate = ParentM2MThroughModel.objects.create(name='parent_separate m2m through')
+        parent_separate.children.through.objects.create(parent=parent_separate, shared_child=child_separate, order=0)
+
+        self.assertEqual(parent.children.through.objects.filter(parent=parent.pk).count(), 1)
+        self.assertEqual(parent_separate.children.through.objects.filter(parent=parent_separate.pk).count(), 1)
+
+        # create edit suggestion with children
+        url = reverse('m2m-through-viewset-edit-suggestion-create', kwargs={'pk': parent.pk})
+        logged_user = User.objects.get(pk=edit_user.pk)
+        self.client.force_login(logged_user)
+        response = self.client.post(
+            url,
+            {
+                'name': 'edited',
+                'edit_suggestion_reason': 'test',
+                'children': [
+                    {'pk': schild.pk, 'order': 1},
+                    {'pk': echild.pk, 'order': 2}
+                ]
+            },
+            format='json'
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['name'], 'edited')
+        self.assertEqual(response.data['edit_suggestion_author'], logged_user.pk)
+        self.assertEqual(len(response.data['children']), 2)
+        self.assertEqual(response.data['children'][0]['shared_child_id'], schild.pk)
+        self.assertEqual(response.data['children'][1]['shared_child_id'], echild.pk)
+
+        ed_sug = parent.edit_suggestions.latest()
+        self.assertEqual(ed_sug.edit_suggestion_author, logged_user)
+        self.assertEqual(ed_sug.name, 'edited')
+        self.assertEqual(ed_sug.children.through.objects.filter(parent=ed_sug.pk).count(), 2)
+

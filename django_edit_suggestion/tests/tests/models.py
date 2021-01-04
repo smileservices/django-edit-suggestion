@@ -213,6 +213,7 @@ class BaseFunctionsTest(TestCase):
         self.assertEqual(edited.children.through.objects.count(), 1)
         self.assertEqual(edited.children.through.objects.first().shared_child, echild)
         self.assertEqual(edited.children.through.objects.first().order, 2)
+
         # test publish
         edited.edit_suggestion_publish(user=admin_user)
         parent_child_through = parent.children.through.objects.all()[0]

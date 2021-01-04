@@ -277,8 +277,8 @@ class EditSuggestion(object):
             on_delete=models.CASCADE,
         )
         fields[m2m_field['through']['self_field']] = models.ForeignKey(parent_model_name, **field_args)
-
         attrs.update(fields)
+
         name = self.get_edit_suggestion_model_name(m2m_field['through']['model'])
         edit_suggestion_through_model = type(str(name), (models.Model,), attrs)
         return edit_suggestion_through_model

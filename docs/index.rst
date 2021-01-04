@@ -26,8 +26,18 @@ https://github.com/smileservices/django-edit-suggestion
 
 Changes
 ~~~~~~~
+1.31
+   #. rest_views: use edit suggestion listing serializer when retrieving the list of edit suggestions
+
+1.30
+   #. add m2m through support in rest views and refactor the create edit suggestion
+
+1.29
+   #. add m2m through support
+
 1.28
    #. ``edit_suggestions`` REST view returns paginated results. Can be filtered by status ex: ``api/resources/88/edit_suggestions/?status=0``
+
 1.27
    #. Add post_publish/post_reject hooks
 

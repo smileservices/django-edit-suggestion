@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='django-edit-suggestion',
-    version='1.28',
+    version='1.31',
     description='A django package for creating multiple users editable models',
     url='https://github.com/smileservices/django-edit-suggestion',
     author='Vladimir Gorea',
