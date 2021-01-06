@@ -303,16 +303,33 @@ class EditSuggestion(object):
                 parent_m2m_field = getattr(instance.edit_suggestion_parent, m2m_field['name'])
                 instance_m2m_field = getattr(instance, m2m_field['name'])
                 if 'through' in m2m_field:
+
+
+                    filter_dict = {}
+                    filter_dict[m2m_field['through']['self_field']] = instance.edit_suggestion_parent
+                    # need to filter manually
+
                     # clear the parent through records
-                    parent_m2m_field.through.objects.all().delete()
-                    # get data from edit through records and create parent through records
-                    through_fields = filter(lambda x: x.name not in ['id', m2m_field['through']['self_field']], instance_m2m_field.through._meta.fields)
-                    for child in instance_m2m_field.through.objects.all():
+                    parent_m2m_field.through.objects.filter(**filter_dict).all().delete()
+
+                    # get supplimentary fields of through model
+                    through_fields = []
+                    for through_field in instance_m2m_field.through._meta.fields:
+                        if through_field.name not in ['id', m2m_field['through']['self_field']]:
+                            through_fields.append(through_field.name)
+
+                    # need to filter manually
+                    filter_dict[m2m_field['through']['self_field']] = instance
+                    all_edit_through_children = instance_m2m_field.through.objects.filter(**filter_dict).all()
+
+                    # copy child data of edit suggestion to parent by creating new children
+                    for child in all_edit_through_children:
                         data = {
                             m2m_field['through']['self_field']: instance.edit_suggestion_parent
                         }
+                        # populate extra through fields
                         for f in through_fields:
-                            data[f.name] = getattr(child, f.name)
+                            data[f] = getattr(child, f)
                         parent_m2m_field.through.objects.create(**data)
                 else:
                     parent_m2m_field.set(instance_m2m_field.all())

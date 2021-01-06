@@ -26,6 +26,8 @@ https://github.com/smileservices/django-edit-suggestion
 
 Changes
 ~~~~~~~
+1.33
+   #. edit suggestion publish: fix m2m through copying of instance children to parent
 1.32
    #. rest_views: publish/reject edit suggestion: add success messages
 1.31
