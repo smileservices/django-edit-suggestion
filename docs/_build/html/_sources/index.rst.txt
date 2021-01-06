@@ -26,6 +26,8 @@ https://github.com/smileservices/django-edit-suggestion
 
 Changes
 ~~~~~~~
+1.32
+   #. rest_views: publish/reject edit suggestion: add success messages
 1.31
    #. rest_views: use edit suggestion listing serializer when retrieving the list of edit suggestions
 

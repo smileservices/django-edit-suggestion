@@ -112,7 +112,8 @@ class ModelViewsetWithEditSuggestion(ModelViewSet):
                 'message': str(e)
             })
         return Response(status=200, data={
-            'error': False
+            'error': False,
+            'message': 'Edit suggestion has been published! Resource has been updated.'
         })
 
     @action(methods=['POST'], detail=True)
@@ -135,5 +136,6 @@ class ModelViewsetWithEditSuggestion(ModelViewSet):
                 'message': str(e)
             })
         return Response(status=200, data={
-            'error': False
+            'error': False,
+            'message': 'Edit suggestion has been rejected! It will be hidden from results from now on.'
         })
