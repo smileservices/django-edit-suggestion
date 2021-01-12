@@ -35,4 +35,4 @@ class EditSuggestionManager(models.Manager):
         return self.create(**data)
 
     def get_tracked_fields(self):
-        return self.model.edit_suggestion_tracked_fields['simple'],  self.model.edit_suggestion_tracked_fields['m2m']
+        return self.model.edit_suggestion_tracked_fields['simple'],  self.model.edit_suggestion_tracked_fields['foreign'], self.model.edit_suggestion_tracked_fields['m2m']

@@ -244,9 +244,12 @@ a GET request to ``reverse('parent-viewset-edit-suggestions', kwargs={'pk': 1})`
 
 The url in string form would be ``/api/parent/1/create_edit_suggestion/``.
 
-To **create** an edit suggestion for a resource we will send a POST request
-to ``reverse('parent-viewset-create-edit-suggestion', kwargs={'pk': 1})``
-The url in string form would be ``/api/parent/1/edit_suggestions/``.
+To **create** an edit suggestion for a resource there are 2 ways:
+    1. POST request to ``reverse('parent-viewset-create-edit-suggestion', kwargs={'pk': 1})``
+    The url in string form would be ``/api/parent/1/edit_suggestions/``.
+
+    2. use ``ModelViewsetWithEditSuggestion`` method ``edit_suggestion_perform_create``
+    since 1.34 the foreign key fields are handled as well
 
 
 To **publish** using the viewset send a POST request to ``reverse('parent-viewset-edit-suggestion-publish', kwargs={'pk': 1})``

@@ -1,4 +1,4 @@
-from .models import Tag, ParentModel, ParentM2MThroughModel, SharedChildOrder, SharedChild
+from .models import Tag, ParentModel, ParentM2MThroughModel, SharedChildOrder, SharedChild, ForeignKeyModel
 
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from django_edit_suggestion.rest_serializers import EditSuggestionSerializer
@@ -44,6 +44,42 @@ class ParentSerializer(EditSuggestionSerializer):
     @staticmethod
     def get_edit_suggestion_listing_serializer():
         return ParentEditListingSerializer
+
+
+# serializers for model with foreign key
+class SharedChildSerializer(ModelSerializer):
+    queryset = SharedChild.objects.all()
+
+    class Meta:
+        model = SharedChild
+        fields = ['name', 'pk']
+
+
+class ForeignKeyEditSuggestionModelSerializer(ModelSerializer):
+    queryset = ForeignKeyModel.edit_suggestions
+    foreign = SharedChildSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = ForeignKeyModel.edit_suggestions.model
+        fields = ['name', 'foreign', 'pk', 'edit_suggestion_author']
+
+
+class ForeignKeyModelSerializer(EditSuggestionSerializer):
+    queryset = ForeignKeyModel.objects.all()
+    foreign = SharedChildSerializer(many=False, read_only=True, allow_null=True)
+
+    class Meta:
+        model = ForeignKeyModel
+        fields = ['name', 'foreign', 'pk']
+
+    def run_validation(self, data):
+        validated_data = super(ForeignKeyModelSerializer, self).run_validation(data)
+        validated_data['foreign_id'] = data['foreign']
+        return validated_data
+
+    @staticmethod
+    def get_edit_suggestion_serializer():
+        return ForeignKeyEditSuggestionModelSerializer
 
 
 # serializers for m2m through models

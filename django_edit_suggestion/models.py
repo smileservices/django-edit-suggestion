@@ -17,6 +17,7 @@ from django.utils.encoding import smart_str
 from . import exceptions
 from .manager import EditSuggestionDescriptor
 from django.contrib.auth.models import PermissionDenied
+from django.db.models.fields.related import ForeignKey
 
 registered_models = {}
 
@@ -58,7 +59,7 @@ class EditSuggestion(object):
         self.related_name = related_name
         self.excluded_fields = excluded_fields if excluded_fields else []
         self.edit_suggestion_model = None  # will be declared in finalize method
-        self.tracked_fields = {'simple': [], 'm2m': []}  # filled up in set_tracked_fields method
+        self.tracked_fields = {'simple': [], 'foreign': [], 'm2m': []}  # filled up in set_tracked_fields method
         try:
             if isinstance(bases, six.string_types):
                 raise TypeError
@@ -124,11 +125,14 @@ class EditSuggestion(object):
 
     def set_tracked_fields(self, copied_fields):
         self.tracked_fields['m2m'] = [f for f in self.m2m_fields]
-        for field_name in copied_fields.keys():
+        for field_name, field in copied_fields.items():
             # exclude id and m2m fields
             if field_name == 'id' or field_name in [f['name'] for f in self.tracked_fields['m2m']]:
                 continue
-            self.tracked_fields['simple'].append(field_name)
+            if field.__class__ == ForeignKey:
+                self.tracked_fields['foreign'].append(field_name)
+            else :
+                self.tracked_fields['simple'].append(field_name)
 
     def create_edit_suggestion_model(self, model):
         """
@@ -298,13 +302,13 @@ class EditSuggestion(object):
                 raise PermissionDenied('User not allowed to publish the edit suggestion')
             for updatable_field in self.tracked_fields['simple']:
                 setattr(instance.edit_suggestion_parent, updatable_field, getattr(instance, updatable_field))
+            for updatable_field in self.tracked_fields['foreign']:
+                setattr(instance.edit_suggestion_parent, updatable_field, getattr(instance, updatable_field))
             # set m2m fields
             for m2m_field in self.tracked_fields['m2m']:
                 parent_m2m_field = getattr(instance.edit_suggestion_parent, m2m_field['name'])
                 instance_m2m_field = getattr(instance, m2m_field['name'])
                 if 'through' in m2m_field:
-
-
                     filter_dict = {}
                     filter_dict[m2m_field['through']['self_field']] = instance.edit_suggestion_parent
                     # need to filter manually

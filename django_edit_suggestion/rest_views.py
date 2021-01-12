@@ -49,11 +49,14 @@ class ModelViewsetWithEditSuggestion(ModelViewSet):
             'edit_suggestion_author': self.request.user,
             'edit_suggestion_reason': self.request.data['edit_suggestion_reason'],
         }
-        fields_simple, fields_m2m = parent.edit_suggestions.get_tracked_fields()
+        fields_simple, fields_foreign, fields_m2m = parent.edit_suggestions.get_tracked_fields()
         # loop through fields and populate data_dict with values from self.request.data
         for f in fields_simple:
             if f in self.request.data:
                 data_dict[f] = self.request.data[f]
+        for f in fields_foreign:
+            if f in self.request.data:
+                data_dict[f'{f}_id'] = self.request.data[f]
         instance = parent.edit_suggestions.new(data_dict)
         self.edit_sugestion_handle_m2m_fields(instance, fields_m2m)
         return instance

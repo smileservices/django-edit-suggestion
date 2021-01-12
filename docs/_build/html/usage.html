@@ -359,9 +359,13 @@ This method should return the edit suggestion serializer.</p>
 <p>Thus, to <strong>retrieve the edit suggestions</strong> for a specific resource using django rest we would send
 a GET request to <code class="docutils literal notranslate"><span class="pre">reverse('parent-viewset-edit-suggestions',</span> <span class="pre">kwargs={'pk':</span> <span class="pre">1})</span></code>.</p>
 <p>The url in string form would be <code class="docutils literal notranslate"><span class="pre">/api/parent/1/create_edit_suggestion/</span></code>.</p>
-<p>To <strong>create</strong> an edit suggestion for a resource we will send a POST request
-to <code class="docutils literal notranslate"><span class="pre">reverse('parent-viewset-create-edit-suggestion',</span> <span class="pre">kwargs={'pk':</span> <span class="pre">1})</span></code>
+<dl>
+<dt>To <strong>create</strong> an edit suggestion for a resource there are 2 ways:</dt><dd><p>1. POST request to <code class="docutils literal notranslate"><span class="pre">reverse('parent-viewset-create-edit-suggestion',</span> <span class="pre">kwargs={'pk':</span> <span class="pre">1})</span></code>
 The url in string form would be <code class="docutils literal notranslate"><span class="pre">/api/parent/1/edit_suggestions/</span></code>.</p>
+<p>2. use <code class="docutils literal notranslate"><span class="pre">ModelViewsetWithEditSuggestion</span></code> method <code class="docutils literal notranslate"><span class="pre">edit_suggestion_perform_create</span></code>
+since 1.34 the foreign key fields are handled as well</p>
+</dd>
+</dl>
 <p>To <strong>publish</strong> using the viewset send a POST request to <code class="docutils literal notranslate"><span class="pre">reverse('parent-viewset-edit-suggestion-publish',</span> <span class="pre">kwargs={'pk':</span> <span class="pre">1})</span></code>
 with a json object having <code class="docutils literal notranslate"><span class="pre">edit_suggestion_id</span></code> key with the edit suggestion pk.</p>
 <p>To <strong>reject</strong> using the viewset send a POST request to <code class="docutils literal notranslate"><span class="pre">reverse('parent-viewset-edit-suggestion-reject',</span> <span class="pre">kwargs={'pk':</span> <span class="pre">1})</span></code>

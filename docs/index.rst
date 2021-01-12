@@ -26,6 +26,8 @@ https://github.com/smileservices/django-edit-suggestion
 
 Changes
 ~~~~~~~
+1.34
+   #. add fix to handling foreign key fields on `ModelViewsetWithEditSuggestion` method `edit_suggestion_perform_create`
 1.33
    #. edit suggestion publish: fix m2m through copying of instance children to parent
 1.32

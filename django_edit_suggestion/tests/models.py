@@ -116,3 +116,15 @@ class ParentM2MThroughModel(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ForeignKeyModel(models.Model):
+    name = models.CharField(max_length=125)
+    foreign = models.ForeignKey(SharedChild, on_delete=models.CASCADE)
+    edit_suggestions = EditSuggestion(
+        change_status_condition=condition_check,
+        user_model=User,
+    )
+
+    def __str__(self):
+        return f'{self.name} with foreign {self.foreign}'

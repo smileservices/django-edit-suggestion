@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase
 from django.urls import reverse
-from ..models import ParentModel, Tag, EditSuggestion, ParentM2MThroughModel, SharedChild
+from ..models import ParentModel, Tag, EditSuggestion, ParentM2MThroughModel, SharedChild, ForeignKeyModel
 
 
 class DjangoRestViews(APITestCase):
@@ -161,3 +161,31 @@ class DjangoRestViews(APITestCase):
         self.assertEqual(ed_sug.name, 'edited')
         self.assertEqual(ed_sug.children.through.objects.filter(parent=ed_sug.pk).count(), 2)
 
+    def test_foreign_key(self):
+        edit_author = User.objects.get(pk=2)
+        staff_user = User.objects.create(username='staff', password=123, is_staff=True)
+
+        foreign_1 = SharedChild.objects.create(name='foreign 1')
+        foreign_2 = SharedChild.objects.create(name='foreign 2')
+
+        # create model with foreign obj
+        create_res = self.client.post(
+            reverse('foreign-viewset-list'),
+            {
+                'name': 'main obj',
+                'foreign': foreign_1.pk
+            }
+        )
+        self.assertEqual(create_res.status_code, 201)
+        self.assertEqual(create_res.data['foreign']['pk'], foreign_1.pk)
+        self.client.force_login(edit_author)
+        edsug_res = self.client.post(
+            reverse('foreign-viewset-edit-suggestion-create', kwargs={'pk': create_res.data['pk']}),
+            {
+                'name': 'main obj',
+                'foreign': foreign_2.pk,
+                'edit_suggestion_reason': 'edit foreign',
+            }
+        )
+        self.assertEqual(edsug_res.status_code, 201)
+        self.assertEqual(edsug_res.data['foreign']['pk'], foreign_2.pk)

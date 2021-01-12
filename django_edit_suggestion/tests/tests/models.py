@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth.models import User, PermissionDenied
 from django_edit_suggestion.models import EditSuggestion
-from ..models import SimpleParentModel, Tag, ParentModel, ParentM2MSelfModel, SharedChild, ParentM2MThroughModel
+from ..models import SimpleParentModel, Tag, ParentModel, ParentM2MSelfModel, SharedChild, ParentM2MThroughModel, ForeignKeyModel
 
 
 class BaseFunctionsTest(TestCase):
@@ -222,4 +222,24 @@ class BaseFunctionsTest(TestCase):
         self.assertEqual(parent.children.through.objects.count(), 1)
         self.assertEqual(parent_child_through.shared_child, edited_child_through.shared_child)
         self.assertEqual(parent_child_through.order, edited_child_through.order)
+
+
+    def test_foreign_model(self):
+        edit_user = User.objects.create(username='edit user')
+        admin_user = User.objects.get(is_staff=True)
+        foreign_obj_1 = SharedChild.objects.create(name='foreign 1')
+        foreign_obj_2 = SharedChild.objects.create(name='foreign 2')
+        model_with_foreign = ForeignKeyModel.objects.create(name='obj', foreign=foreign_obj_1)
+
+        #create edit and publish
+        edited = model_with_foreign.edit_suggestions.new(dict(
+            name='obj',
+            foreign=foreign_obj_2,
+            edit_suggestion_author=edit_user
+        ))
+        edited.edit_suggestion_publish(user=admin_user)
+        model_with_foreign.refresh_from_db()
+        self.assertEqual(model_with_foreign.foreign, foreign_obj_2)
+
+
 

@@ -1,5 +1,5 @@
 from django_edit_suggestion.rest_views import ModelViewsetWithEditSuggestion
-from .serializers import ParentSerializer, ParentEditSerializer, ParentM2MThroughSerializer
+from .serializers import ParentSerializer, ParentEditSerializer, ParentM2MThroughSerializer, ForeignKeyModelSerializer
 
 
 class ParentViewset(ModelViewsetWithEditSuggestion):
@@ -10,3 +10,10 @@ class ParentViewset(ModelViewsetWithEditSuggestion):
 class ParentM2MThroughViewset(ModelViewsetWithEditSuggestion):
     serializer_class = ParentM2MThroughSerializer
     queryset = ParentM2MThroughSerializer.queryset
+
+
+class ForeignKeyModeViewset(ModelViewsetWithEditSuggestion):
+    serializer_class = ForeignKeyModelSerializer
+    queryset = ForeignKeyModelSerializer.queryset
+
+
