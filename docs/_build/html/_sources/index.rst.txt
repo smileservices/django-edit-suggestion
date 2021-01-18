@@ -26,6 +26,8 @@ https://github.com/smileservices/django-edit-suggestion
 
 Changes
 ~~~~~~~
+1.35
+   #. bugfix tracking foreign field changes
 1.34
    #. add fix to handling foreign key fields on `ModelViewsetWithEditSuggestion` method `edit_suggestion_perform_create`
 1.33

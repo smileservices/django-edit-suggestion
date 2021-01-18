@@ -440,7 +440,8 @@ class EditSuggestionChanges(object):
         changed_fields = []
         old_values = model_to_dict(self.edit_suggestion_parent)
         current_values = model_to_dict(self)
-        for field in self.edit_suggestion_tracked_fields['simple'] + [f['name'] for f in self.edit_suggestion_tracked_fields['m2m']]:
+        fields_to_check = self.edit_suggestion_tracked_fields['simple'] + self.edit_suggestion_tracked_fields['foreign'] + [f['name'] for f in self.edit_suggestion_tracked_fields['m2m']]
+        for field in fields_to_check :
             if field in old_values and old_values[field] != current_values[field]:
                 change = ModelChange(field, old_values[field], current_values[field])
                 changes.append(change)
