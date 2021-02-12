@@ -26,6 +26,8 @@ https://github.com/smileservices/django-edit-suggestion
 
 Changes
 ~~~~~~~
+1.36
+   #. edit suggestions viewset uses parent `run_validation` method to get new suggestion data
 1.35
    #. bugfix tracking foreign field changes
 1.34

@@ -33,10 +33,12 @@ class ModelViewsetWithEditSuggestion(ModelViewSet):
 
     @action(methods=['POST'], detail=True)
     def edit_suggestion_create(self, request, *args, **kwargs):
+        serialized_data = self.serializer_class(data=request.data)
+        validated_data = serialized_data.run_validation(request.data)
         serializer = self.serializer_class.get_edit_suggestion_serializer()
         parent = self.get_object()
         try:
-            instance = self.edit_suggestion_perform_create(parent)
+            instance = self.edit_suggestion_perform_create(parent, validated_data)
         except Exception as e:
             return Response(status=401, data={
                 'error': True,
@@ -44,36 +46,39 @@ class ModelViewsetWithEditSuggestion(ModelViewSet):
             })
         return Response(serializer(instance).data, status=status.HTTP_201_CREATED)
 
-    def edit_suggestion_perform_create(self, parent):
+    def edit_suggestion_perform_create(self, parent, data):
+        # Data should be validated using the parent serializer ``run_validation`` method
         data_dict = {
             'edit_suggestion_author': self.request.user,
             'edit_suggestion_reason': self.request.data['edit_suggestion_reason'],
         }
         fields_simple, fields_foreign, fields_m2m = parent.edit_suggestions.get_tracked_fields()
-        # loop through fields and populate data_dict with values from self.request.data
+        # loop through fields and populate data_dict with values from data
         for f in fields_simple:
-            if f in self.request.data:
-                data_dict[f] = self.request.data[f]
+            if f in data:
+                data_dict[f] = data[f]
         for f in fields_foreign:
             if f in self.request.data:
-                data_dict[f'{f}_id'] = self.request.data[f]
+                # In parent serializer ``.run_validation`` should replace field name of foreign_field with foreign_field_id
+                # We have a silent fallback to using raw field data if that's not the case
+                data_dict[f'{f}_id'] = data[f'{f}_id'] if f'{f}_id' in data else self.request.data[f'{f}_id']
         instance = parent.edit_suggestions.new(data_dict)
-        self.edit_sugestion_handle_m2m_fields(instance, fields_m2m)
+        self.edit_sugestion_handle_m2m_fields(instance, data, fields_m2m)
         return instance
 
-    def edit_sugestion_handle_m2m_fields(self, instance, fields_m2m):
+    def edit_sugestion_handle_m2m_fields(self, instance, data, fields_m2m):
         ''' handle m2m fields separately to make it easier for overriding '''
         for f in fields_m2m:
-            if f['name'] not in self.request.data:
+            if f['name'] not in data:
                 continue
             if 'through' in f:
-                self.edit_suggestion_handle_m2m_through_field(instance, f)
+                self.edit_suggestion_handle_m2m_through_field(instance, data, f)
                 continue
             m2m_field = getattr(instance, f['name'])
-            m2m_objects = [obj for obj in f['model'].objects.filter(pk__in=self.request.data[f['name']])]
+            m2m_objects = [obj for obj in f['model'].objects.filter(pk__in=data[f['name']])]
             m2m_field.add(*m2m_objects)
 
-    def edit_suggestion_handle_m2m_through_field(self, instance, f):
+    def edit_suggestion_handle_m2m_through_field(self, instance, data, f):
         '''
             handles data of through in this format:
             [{
@@ -85,7 +90,7 @@ class ModelViewsetWithEditSuggestion(ModelViewSet):
             f         tracked field information (the one supplied in the models when setting up edit suggestion)
         '''
         m2m_field = getattr(instance, f['name'])
-        through_data = self.request.data[f['name']]
+        through_data = data[f['name']]
         m2m_objects_id_list = [o['pk'] for o in through_data]
         m2m_objects = [obj for obj in f['model'].objects.filter(pk__in=m2m_objects_id_list)]
         for idx, m2m_obj in enumerate(m2m_objects):

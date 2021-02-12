@@ -31,11 +31,16 @@ class ParentEditSerializer(ModelSerializer):
 
 class ParentSerializer(EditSuggestionSerializer):
     queryset = ParentModel.objects
-    tags = TagSerializer(many=True)
+    tags = TagSerializer(many=True, read_only=True)
 
     class Meta:
         model = ParentModel
         fields = ['name', 'tags']
+
+    def run_validation(self, data):
+        validated_data = super(ParentSerializer, self).run_validation(data)
+        validated_data['tags'] = data['tags']
+        return validated_data
 
     @staticmethod
     def get_edit_suggestion_serializer():
@@ -105,6 +110,11 @@ class ParentM2MThroughSerializer(EditSuggestionSerializer, HasChildrenFieldsSeri
     class Meta:
         model = ParentM2MThroughModel
         fields = ['pk', 'name', 'children']
+
+    def run_validation(self, data):
+        validated_data = super(ParentM2MThroughSerializer, self).run_validation(data)
+        validated_data['children'] = data['children']
+        return validated_data
 
     @staticmethod
     def get_edit_suggestion_serializer():
