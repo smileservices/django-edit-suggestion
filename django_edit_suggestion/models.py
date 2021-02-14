@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.fields.proxy import OrderWrt
+from django.db.models.fields.files import FileField
 from django.forms.models import model_to_dict
 from django.utils.text import format_lazy
 from django.utils.encoding import smart_str
@@ -46,6 +47,8 @@ class EditSuggestion(object):
             custom_model_name=None,
             app=None,
             related_name=None,
+            signals=None,
+            attrs_to_be_copied=[]
     ):
         self.change_status_condition = change_status_condition
         self.post_publish = post_publish
@@ -60,6 +63,8 @@ class EditSuggestion(object):
         self.excluded_fields = excluded_fields if excluded_fields else []
         self.edit_suggestion_model = None  # will be declared in finalize method
         self.tracked_fields = {'simple': [], 'foreign': [], 'm2m': []}  # filled up in set_tracked_fields method
+        self.signals = signals
+        self.attrs_to_be_copied = attrs_to_be_copied
         try:
             if isinstance(bases, six.string_types):
                 raise TypeError
@@ -100,6 +105,15 @@ class EditSuggestion(object):
         setattr(sender, self.manager_name, descriptor)
         sender._meta.edit_suggestion_manager_attribute = self.manager_name
         models.signals.pre_save.connect(self.pre_save_edit_suggestion, self.edit_suggestion_model, weak=False)
+        # set up custom parent model signals
+        if self.signals:
+            for signal_name, signal_handlers in self.signals.items():
+                signal_instance = getattr(models.signals, signal_name)
+                for signal_handler in signal_handlers:
+                    signal_instance.connect(signal_handler, self.edit_suggestion_model, weak=False)
+        # copy attributes
+        for attr in self.attrs_to_be_copied:
+            setattr(self.edit_suggestion_model, attr, getattr(sender, attr))
 
     def get_edit_suggestion_model_name(self, model):
         if not self.custom_model_name:
@@ -409,13 +423,9 @@ def transform_field(field):
         field.__class__ = models.BigIntegerField
     elif isinstance(field, models.AutoField):
         field.__class__ = models.IntegerField
-
     elif isinstance(field, models.FileField):
-        # Don't copy file, just path.
-        if getattr(settings, "EDIT_SUGGESTION_FILEFIELD_TO_CHARFIELD", False):
-            field.__class__ = models.CharField
-        else:
-            field.__class__ = models.TextField
+       # file fields are handled normally
+       field = field
 
     #  instance shouldn't change create/update timestamps
     field.auto_now = False

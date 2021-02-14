@@ -24,8 +24,17 @@ Github Repo
 https://github.com/smileservices/django-edit-suggestion
 
 
+Todo
+~~~~
+14/02/2021 Tests for file field, signals and copying parent model attributes
+
+
 Changes
 ~~~~~~~
+1.37
+   #. add support for file field. field is copied entirely
+   #. add support for signals
+   #. add support for copying parent model attributes
 1.36
    #. edit suggestions viewset uses parent `run_validation` method to get new suggestion data
 1.35
