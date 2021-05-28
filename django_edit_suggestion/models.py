@@ -40,6 +40,8 @@ class EditSuggestion(object):
             # tuple of dicts with keys 'name','model','through'-optional
             excluded_fields=None,
             m2m_fields=None,
+            # foreign fields that are different than ForeignField
+            special_foreign_fields=None,
             user_model=None,
             verbose_name=None,
             bases=(models.Model,),
@@ -48,7 +50,7 @@ class EditSuggestion(object):
             app=None,
             related_name=None,
             signals=None,
-            attrs_to_be_copied=[]
+            attrs_to_be_copied=None
     ):
         self.change_status_condition = change_status_condition
         self.post_publish = post_publish
@@ -56,6 +58,7 @@ class EditSuggestion(object):
         self.user_set_verbose_name = verbose_name
         self.user_model = user_model
         self.m2m_fields = m2m_fields if m2m_fields else []
+        self.special_foreign_fields = special_foreign_fields if special_foreign_fields else []
         self.cascade_delete_edit_suggestion = cascade_delete_edit_suggestion
         self.custom_model_name = custom_model_name
         self.app = app
@@ -64,7 +67,7 @@ class EditSuggestion(object):
         self.edit_suggestion_model = None  # will be declared in finalize method
         self.tracked_fields = {'simple': [], 'foreign': [], 'm2m': []}  # filled up in set_tracked_fields method
         self.signals = signals
-        self.attrs_to_be_copied = attrs_to_be_copied
+        self.attrs_to_be_copied = attrs_to_be_copied if attrs_to_be_copied else []
         try:
             if isinstance(bases, six.string_types):
                 raise TypeError
@@ -143,7 +146,7 @@ class EditSuggestion(object):
             # exclude id and m2m fields
             if field_name == 'id' or field_name in [f['name'] for f in self.tracked_fields['m2m']]:
                 continue
-            if field.__class__ == ForeignKey:
+            if field.__class__ == ForeignKey or field_name in self.special_foreign_fields:
                 self.tracked_fields['foreign'].append(field_name)
             else :
                 self.tracked_fields['simple'].append(field_name)

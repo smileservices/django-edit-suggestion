@@ -102,6 +102,22 @@ a ``django.contrib.auth.models.PermissionDenied`` exception will be raised.
 This will change the status from ``edit_suggestion.Status.UNDER_REVIEWS`` to ``edit_suggestion.Status.REJECTED``.
 After rejecting, the edit suggestion won't be able to be edited anymore.
 
+Foreign Fields different than type ForeignField
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If using a foreign field different than ForeignField, like ``mptt.fields.TreeForeignKey``
+use argument ``special_foreign_fields`` when initializing the EditSuggestion:
+
+.. code-block:: python
+
+    edit_suggestions = EditSuggestion(
+        excluded_fields=(
+            'created_at', 'updated_at', 'author', 'thumbs_up_array', 'thumbs_down_array'),
+        special_foreign_fields=['parent',],
+        change_status_condition=edit_suggestion_change_status_condition,
+        post_publish=post_publish_edit,
+        post_reject=post_reject_edit
+    )
+
 M2M Fields
 ~~~~~~~~~~
 

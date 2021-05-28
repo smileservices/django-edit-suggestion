@@ -31,6 +31,8 @@ Todo
 
 Changes
 ~~~~~~~
+1.38
+   #. add support for foreign fields of type other than ForeignField
 1.37
    #. add support for file field. field is copied entirely
    #. add support for signals
