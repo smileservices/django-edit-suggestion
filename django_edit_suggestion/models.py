@@ -250,11 +250,8 @@ class EditSuggestion(object):
         # handle m2m fields
         fields = {}
         for m2m_field in self.m2m_fields:
-            if type(m2m_field['model']) == str:
-                if m2m_field['model'] == 'self':
-                    m2m_field['model'] = model
-                else:
-                    m2m_field['model'] = __import__(m2m_field['model'])
+            if m2m_field['model'] == 'self':
+                m2m_field['model'] = model
             through = None
             if 'through' in m2m_field:
                 # create new pivot table
