@@ -31,6 +31,8 @@ Todo
 
 Changes
 ~~~~~~~
+1.39
+   #. m2m fields work with specifying to relation by string (django style)
 1.38
    #. add support for foreign fields of type other than ForeignField
 1.37
