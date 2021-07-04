@@ -31,6 +31,8 @@ Todo
 
 Changes
 ~~~~~~~
+1.40
+   #. fix m2m field str type
 1.39
    #. m2m fields work with specifying to relation by string (django style)
 1.38
