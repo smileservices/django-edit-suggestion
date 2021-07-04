@@ -2,6 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from django.utils.module_loading import import_string
 from django.core.exceptions import PermissionDenied
 
 
@@ -75,7 +76,16 @@ class ModelViewsetWithEditSuggestion(ModelViewSet):
                 self.edit_suggestion_handle_m2m_through_field(instance, data, f)
                 continue
             m2m_field = getattr(instance, f['name'])
-            m2m_objects = [obj for obj in f['model'].objects.filter(pk__in=data[f['name']])]
+            if type(f['model']) == str:
+                # string model is in form {app}.{modelname} but we can't import it like this
+                # with import_string it must be {app}.models.{modelname}
+                model_string_arr = f['model'].split('.')
+                model_string_arr.insert(1, 'models')
+                model_string = '.'.join(model_string_arr)
+                foreign_model = import_string(model_string)
+            else:
+                foreign_model = f['model']
+            m2m_objects = [obj for obj in foreign_model.objects.filter(pk__in=data[f['name']])]
             m2m_field.add(*m2m_objects)
 
     def edit_suggestion_handle_m2m_through_field(self, instance, data, f):
